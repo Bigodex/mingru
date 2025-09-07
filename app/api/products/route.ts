@@ -6,7 +6,7 @@ import { Product } from "@/lib/models";
 export async function GET() {
   try {
     const client = await clientPromise;
-    const db = client.db("mingru");
+    const db = client.db("mingruDB");
     const products = await db.collection<Product>("products").find().toArray();
 
     return NextResponse.json(products);

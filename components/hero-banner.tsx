@@ -24,6 +24,9 @@ const bannerImages = [
 
 export function HeroBanner() {
   const [currentSlide, setCurrentSlide] = useState(0)
+  const [touchStartX, setTouchStartX] = useState<number | null>(null)
+  const [touchEndX, setTouchEndX] = useState<number | null>(null)
+  const minSwipeDistance = 50
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -45,10 +48,32 @@ export function HeroBanner() {
     setCurrentSlide((prev) => (prev + 1) % bannerImages.length)
   }
 
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    setTouchEndX(null)
+    setTouchStartX(e.targetTouches[0].clientX)
+  }
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    setTouchEndX(e.targetTouches[0].clientX)
+  }
+
+  const handleTouchEnd = () => {
+    if (touchStartX === null || touchEndX === null) return
+    const distance = touchStartX - touchEndX
+    if (Math.abs(distance) > minSwipeDistance) {
+      distance > 0 ? goToNext() : goToPrevious()
+    }
+  }
+
   return (
-    <section className="relative h-[400px] overflow-hidden">
+    <section className="relative h-[400px] overflow-hidden px-4 md:px-0 mt-4 md:mt-0 rounded-b-[10px] md:rounded-b-none">
       {/* Banner Images */}
-      <div className="relative h-full">
+      <div
+        className="relative h-full"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         {bannerImages.map((banner, index) => (
           <div
             key={banner.id}
@@ -59,11 +84,11 @@ export function HeroBanner() {
             <img
               src={banner.image || "/placeholder.svg"}
               alt={banner.buttonText}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover rounded-b-[10px] rounded-t-[10px] md:rounded-none"
             />
 
             {/* Botão em cada imagem */}
-            <div className="absolute bottom-8 left-8">
+            <div className="absolute bottom-35 left-1/2 transform -translate-x-1/2 md:left-8 md:transform-none">
               <Button size="lg" className="shadow-lg">
                 {banner.buttonText}
               </Button>

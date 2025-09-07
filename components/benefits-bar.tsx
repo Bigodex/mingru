@@ -1,4 +1,4 @@
-import { Truck, Package, CreditCard, RotateCcw } from "lucide-react"
+import { Truck, Package, CreditCard, RotateCcw, Headphones, ShieldCheck } from "lucide-react"
 
 const benefits = [
   {
@@ -18,27 +18,27 @@ const benefits = [
     text: "Parcelamos em até 12x",
   },
   {
-    icon: RotateCcw,
-    text: "Parcelamos em até 12x",
+    icon: Headphones,
+    text: "Suporte 24/7",
   },
 ]
 
 
 export function BenefitsBar() {
   return (
-    <section className="hidden md:block bg-primary/5 py-3 border border-border rounded-[30px] mt-4 mx-24 lg:mx-70 shadow-md">
+    <section className="hidden md:block bg-muted py-10 border border-border rounded-tl-none rounded-tr-none rounded-br-[30px] rounded-bl-[30px] mt-0 mx-6 lg:mx-100 shadow-md">
       <div className="max-w-6xl mx-auto px-6">
-        <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16">
-          {benefits.map((benefit, index) => (
-            <div
-              key={index}
-              className="flex flex-col md:flex-row items-center space-y-1 md:space-y-0 md:space-x-2 text-sm font-medium"
-            >
-              <benefit.icon className="h-5 w-5 text-primary" />
-              <span>{benefit.text}</span>
-            </div>
-          ))}
+      <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16">
+        {benefits.map((benefit, index) => (
+        <div
+          key={index}
+          className="flex items-center space-x-2 text-sm font-medium"
+        >
+          <benefit.icon className="h-5 w-5 text-primary" />
+          <span>{benefit.text}</span>
         </div>
+        ))}
+      </div>
       </div>
     </section>
   )

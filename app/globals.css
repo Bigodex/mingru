@@ -5,7 +5,7 @@
 
 :root {
   /* Updated color tokens to match streetwear store design with mustard yellow primary */
-  --background: #ffffff; /* White background */
+  --background: #f3f3f3; /* White background */
   --foreground: #333; /* Dark gray text */
   --card: #fff; /* Light gray card background */
   --card-foreground: #333; /* Dark gray text on cards */

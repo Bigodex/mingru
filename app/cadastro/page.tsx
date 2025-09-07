@@ -17,7 +17,7 @@ export default function CadastroPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [formData, setFormData] = useState({
-    nome: "",
+    name: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -33,17 +33,12 @@ export default function CadastroPage() {
       return
     }
 
-    if (!formData.acceptTerms) {
-      alert("Você deve aceitar os termos de uso")
-      return
-    }
-
     try {
       const res = await fetch("/api/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          nome: formData.nome,
+          name: formData.name,
           email: formData.email,
           password: formData.password,
         }),
@@ -97,13 +92,13 @@ export default function CadastroPage() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="nome">Nome completo</Label>
+                <Label htmlFor="name">Nome completo</Label>
                 <Input
-                  id="nome"
-                  name="nome"
+                  id="name"
+                  name="name"
                   type="text"
                   placeholder="Seu nome completo"
-                  value={formData.nome}
+                  value={formData.name}
                   onChange={handleInputChange}
                   required
                   className="pl-3 border border-border bg-muted/50"

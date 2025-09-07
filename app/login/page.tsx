@@ -1,40 +1,45 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import Link from "next/link"
 import { Eye, EyeOff } from "lucide-react"
+import { signIn } from "next-auth/react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  })
+  const [formData, setFormData] = useState({ email: "", password: "" })
+  const [error, setError] = useState("")
+  const router = useRouter()
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError("")
 
-    // Usuário fake só para teste
-    const fakeUser = { email: "teste@mingru.com", password: "1234" }
+    const res = await signIn("credentials", {
+      redirect: false,
+      email: formData.email,
+      password: formData.password,
+    })
 
-    if (
-      formData.email === fakeUser.email &&
-      formData.password === fakeUser.password
-    ) {
-      // salva sessão fake
-      localStorage.setItem("user", JSON.stringify({ email: formData.email }))
-      alert("Login realizado com sucesso!")
-      window.location.href = "/" // redireciona para home
+    if (res?.error) {
+      setError("Email ou senha inválidos")
     } else {
-      alert("Email ou senha inválidos")
+      router.push("/") // redireciona para home
     }
   }
 
@@ -47,16 +52,18 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header 
-        onCategoryClick={() => console.log("Category clicked")} 
-        onAvatarClick={() => console.log("Avatar clicked")} 
+      <Header
+        onCategoryClick={() => console.log("Category clicked")}
+        onAvatarClick={() => console.log("Avatar clicked")}
       />
 
       <main className="flex-1 flex items-center justify-center px-4 py-12 bg-muted/20">
         <Card className="w-full max-w-md">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl font-bold text-center">Entrar</CardTitle>
-            <CardDescription className="text-center">Entre na sua conta para continuar comprando</CardDescription>
+            <CardDescription className="text-center">
+              Entre na sua conta para continuar comprando
+            </CardDescription>
           </CardHeader>
 
           <CardContent>
@@ -104,8 +111,15 @@ export default function LoginPage() {
                 </div>
               </div>
 
+              {error && (
+                <p className="text-sm text-red-500">{error}</p>
+              )}
+
               <div className="flex items-center justify-between">
-                <Link href="/esqueci-senha" className="text-sm text-primary hover:underline">
+                <Link
+                  href="/esqueci-senha"
+                  className="text-sm text-primary hover:underline"
+                >
                   Esqueci minha senha
                 </Link>
               </div>
@@ -119,7 +133,10 @@ export default function LoginPage() {
           <CardFooter className="flex flex-col space-y-4">
             <div className="text-sm text-center text-muted-foreground">
               Não tem uma conta?{" "}
-              <Link href="/cadastro" className="text-primary hover:underline font-medium">
+              <Link
+                href="/cadastro"
+                className="text-primary hover:underline font-medium"
+              >
                 Cadastre-se aqui
               </Link>
             </div>

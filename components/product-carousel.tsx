@@ -72,7 +72,7 @@ export function ProductCarousel({ title, products }: ProductCarouselProps) {
           {products.map((product) => (
             <Card
               key={product.id}
-              className="flex-shrink-2 w-64 hover:shadow-lg transition-shadow bg-primary/30 p-0 flex flex-col"
+              className="flex-shrink-2 w-64 hover:shadow-lg transition-shadow bg-card p-0 flex flex-col"
             >
               <CardContent className="p-0 flex-1 flex flex-col">
                 <Link href={`/produto/${product.id}`}>

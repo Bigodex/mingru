@@ -1,12 +1,18 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { Search, ShoppingCart, Menu, X, ChevronDown, Home } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { useSession, signOut } from "next-auth/react";
+import { Search, ShoppingCart, Menu, X, ChevronDown, Home } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface HeaderProps {
   onCategoryClick: (category: string) => void;
@@ -14,16 +20,11 @@ interface HeaderProps {
 }
 
 export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [openDropdown, setOpenDropdown] = useState<string | null>(null)
-  const [user, setUser] = useState<any>(null)
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user")
-    if (storedUser) {
-      setUser(JSON.parse(storedUser))
-    }
-  }, [])
+  // Sessão do NextAuth
+  const { data: session } = useSession();
 
   const navItems = [
     {
@@ -74,7 +75,7 @@ export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
         { name: "Colares", href: "/categoria/acessorios/colares" },
       ],
     },
-  ]
+  ];
 
   return (
     <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
@@ -84,99 +85,69 @@ export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
           <Link href="/" className="flex items-center space-x-2">
             <div className="flex items-center space-x-2 group">
               <Home className="h-5 w-5 text-primary-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-              <div className="text-2xl font-bold text-primary-foreground hover:translate-y-[-2px] transition-transform duration-200">Mingru</div>
+              <div
+                className="text-2xl font-bold text-primary-foreground hover:translate-y-[-2px] transition-transform duration-200"
+                style={{ fontFamily: "Inter, sans-serif" }}
+              >
+                Mingru
+              </div>
             </div>
           </Link>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-8 ml-8">
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center space-x-8 ml-8">
             {navItems.map((item) => (
               <div key={item.name}>
                 {item.submenu ? (
-                <DropdownMenu
-                  onOpenChange={(open) => setOpenDropdown(open ? item.name : null)}
-                >
-                  <DropdownMenuTrigger className="flex items-center space-x-1 text-sm font-medium hover:text-primary transition-colors">
-                  <span>{item.name}</span>
-                  <ChevronDown
-                    className={`h-4 w-4 transition-transform ${
-                      openDropdown === item.name ? "rotate-0" : "rotate-180"
-                    }`}
-                  />
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="text-center">
-                  {item.submenu.map((subItem) => (
-                    <DropdownMenuItem
-                    key={subItem.name}
-                    asChild
-                    className="justify-center"
-                    >
-                    <Link href={subItem.href}>{subItem.name}</Link>
-                    </DropdownMenuItem>
-                  ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                  <DropdownMenu
+                    onOpenChange={(open) => setOpenDropdown(open ? item.name : null)}
+                  >
+                    <DropdownMenuTrigger className="flex items-center space-x-1 text-sm font-medium hover:text-primary transition-colors">
+                      <span>{item.name}</span>
+                      <ChevronDown
+                        className={`h-4 w-4 transition-transform ${
+                          openDropdown === item.name ? "rotate-0" : "rotate-180"
+                        }`}
+                      />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="text-center">
+                      {item.submenu.map((subItem) => (
+                        <DropdownMenuItem
+                          key={subItem.name}
+                          asChild
+                          className="justify-center"
+                        >
+                          <Link href={subItem.href}>{subItem.name}</Link>
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 ) : (
-                <button
-                  onClick={() => onCategoryClick(item.name.toLowerCase())}
-                  className="text-sm font-medium hover:text-primary transition-colors"
-                >
-                  {item.name}
-                </button>
+                  <button
+                    onClick={() => onCategoryClick(item.name.toLowerCase())}
+                    className="text-sm font-medium hover:text-primary transition-colors"
+                  >
+                    {item.name}
+                  </button>
                 )}
               </div>
             ))}
-            </nav>
+          </nav>
 
           {/* Search Bar */}
           <div className="hidden md:flex items-center space-x-4 flex-1 max-w-md mx-8">
             <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input type="search" placeholder="Buscar produtos..." className="pl-10 border border-border bg-muted/50" />
+              <Input
+                type="search"
+                placeholder="Buscar produtos..."
+                className="pl-10 border border-border bg-muted/50"
+              />
             </div>
           </div>
 
           {/* Action Buttons */}
           <div className="flex items-center space-x-4">
-            {user ? (
-              // Avatar with dropdown
-              <DropdownMenu>
-                <DropdownMenuTrigger className="focus:outline-none">
-                  <Image
-                    src="/placeholder-user.jpg" // Updated placeholder image
-                    alt="Avatar"
-                    width={36}
-                    height={36}
-                    className="rounded-full cursor-pointer border-2"
-                    style={{ borderColor: "#666" }}
-                    onClick={onAvatarClick}
-                  />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem asChild>
-                    <Link href="/perfil">Ver Perfil</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => {
-                      localStorage.removeItem("user")
-                      window.location.href = "/login"
-                    }}
-                  >
-                    Sair
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <>
-                <Button variant="outline" size="sm" asChild className="hidden md:flex bg-transparent">
-                  <Link href="/login">Entrar</Link>
-                </Button>
-                <Button size="sm" asChild className="hidden md:flex">
-                  <Link href="/cadastro">Cadastrar</Link>
-                </Button>
-              </>
-            )}
-
             {/* Shopping Cart */}
             <Button
               variant="ghost"
@@ -189,8 +160,55 @@ export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
               </Link>
             </Button>
 
+            {session ? (
+              // Avatar + Greeting + Dropdown
+              <DropdownMenu>
+                <DropdownMenuTrigger className="focus:outline-none flex items-center space-x-2">
+                  <Image
+                    src="/placeholder-user.jpg"
+                    alt="Avatar"
+                    width={36}
+                    height={36}
+                    className="rounded-full cursor-pointer border-2"
+                    style={{ borderColor: "#666" }}
+                    onClick={onAvatarClick}
+                  />
+                  <span className="text-sm font-medium">
+                    Olá, {session.user?.name}!
+                  </span>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem asChild>
+                    <Link href="/perfil">Ver Perfil</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => signOut({ callbackUrl: '/login' })}>
+                    Sair
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  asChild
+                  className="hidden md:flex bg-transparent"
+                >
+                  <Link href="/login">Entrar</Link>
+                </Button>
+                <Button size="sm" asChild className="hidden md:flex">
+                  <Link href="/cadastro">Cadastrar</Link>
+                </Button>
+              </>
+            )}
+
             {/* Mobile Menu Button */}
-            <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+            >
               {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
           </div>
@@ -203,7 +221,11 @@ export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
               {/* Mobile Search */}
               <div className="relative border border-border rounded">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                <Input type="search" placeholder="Buscar produtos..." className="pl-10 bg-muted/50" />
+                <Input
+                  type="search"
+                  placeholder="Buscar produtos..."
+                  className="pl-10 bg-muted/50"
+                />
               </div>
 
               {/* Mobile Navigation */}
@@ -238,7 +260,7 @@ export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
               </nav>
 
               {/* Mobile Auth Buttons */}
-              {!user && (
+              {!session && (
                 <div className="flex justify-between space-x-2 pt-4">
                   <Button variant="outline" asChild className="flex-1">
                     <Link href="/login">Entrar</Link>
@@ -250,22 +272,27 @@ export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
               )}
             </div>
 
-            {/* Logo and Footer */}
-            {user && (
+            {/* Mobile Footer with logo */}
+            {session && (
               <div className="flex items-center justify-center mt-4 space-x-2">
                 <Image
-                  src="/logo-oficial.svg" // Replace with the actual logo path
+                  src="/logo-oficial.svg"
                   alt="Mingru Logo"
                   width={36}
                   height={36}
                   className="rounded-full"
                 />
-                <span className="text-lg font-bold text-primary-foreground">Mingru</span>
+                <span
+                  className="text-lg font-bold text-primary-foreground"
+                  style={{ fontFamily: "Inter, sans-serif" }}
+                >
+                  Mingru
+                </span>
               </div>
             )}
           </div>
         )}
       </div>
     </header>
-  )
+  );
 }
