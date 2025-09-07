@@ -86,13 +86,13 @@ export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
             <div className="flex items-center group relative">
-              <Home className="h-5 w-5 text-primary-foreground absolute opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+              <Home className="h-6 w-6 text-primary-foreground absolute opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
               <Image
                 src="/Branding/logo-texto.svg"
                 alt="Mingru"
                 width={120}
                 height={32}
-                className="object-contain transition-transform duration-200 transform translate-x-0 group-hover:translate-x-6"
+                className="object-contain transition-transform duration-200 transform translate-x-0 group-hover:translate-x-7"
               />
             </div>
           </Link>

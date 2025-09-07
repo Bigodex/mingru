@@ -1,10 +1,19 @@
 "use client"
 
 import type React from "react"
-
-import { useState, use } from "react"
-import { notFound } from "next/navigation"
-import { Minus, Plus, ShoppingCart, Heart, Share2, Star, Truck, RotateCcw, Shield, ZoomIn } from "lucide-react"
+import { useEffect, useState } from "react"
+import {
+  Minus,
+  Plus,
+  ShoppingCart,
+  Heart,
+  Share2,
+  Star,
+  Truck,
+  RotateCcw,
+  Shield,
+  ZoomIn,
+} from "lucide-react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { ProductCarousel } from "@/components/product-carousel"
@@ -15,81 +24,31 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
+import type { Product } from "@/components/types"
 
-// Mock product data with detailed information
-const productData = {
-  1: {
-    id: 1,
-    name: "Camiseta Oversized Preta",
-    description:
-      "Camiseta streetwear com fit oversized perfeita para o dia a dia. Confeccionada em 100% algodão premium, oferece máximo conforto e durabilidade.",
-    price: 89.9,
-    originalPrice: 119.9,
-    images: [
-      "/black-oversized-streetwear-t-shirt.jpg",
-      "/placeholder.svg?height=600&width=500",
-      "/placeholder.svg?height=600&width=500",
-      "/placeholder.svg?height=600&width=500",
-    ],
-    category: "masculino",
-    subcategory: "camisetas",
-    brand: "StreetStyle",
-    sizes: ["P", "M", "G", "GG"],
-    colors: [
-      { name: "Preto", value: "#000000" },
-      { name: "Branco", value: "#FFFFFF" },
-      { name: "Cinza", value: "#808080" },
-    ],
-    inStock: true,
-    stockCount: 15,
-    rating: 4.8,
-    reviewCount: 127,
-    features: ["100% Algodão Premium", "Fit Oversized", "Gola Redonda", "Estampa Resistente", "Lavagem à Máquina"],
-    specifications: {
-      Material: "100% Algodão",
-      Gramatura: "180g/m²",
-      Origem: "Brasil",
-      Cuidados: "Lavar à máquina até 30°C",
-      Modelo: "Oversized",
-    },
-  },
-  2: {
-    id: 2,
-    name: "Hoodie Urban Style",
-    description:
-      "Moletom com capuz estilo urbano, perfeito para os dias mais frios. Design moderno com bolso canguru e cordões ajustáveis.",
-    price: 159.9,
-    originalPrice: 199.9,
-    images: [
-      "/urban-style-hoodie-streetwear.jpg",
-      "/placeholder.svg?height=600&width=500",
-      "/placeholder.svg?height=600&width=500",
-    ],
-    category: "unissex",
-    subcategory: "oversized",
-    brand: "Urban",
-    sizes: ["P", "M", "G", "GG"],
-    colors: [
-      { name: "Cinza", value: "#808080" },
-      { name: "Preto", value: "#000000" },
-      { name: "Marinho", value: "#000080" },
-    ],
-    inStock: true,
-    stockCount: 8,
-    rating: 4.9,
-    reviewCount: 89,
-    features: ["Moletom Premium", "Capuz com Cordão", "Bolso Canguru", "Punhos Ribana", "Fit Oversized"],
-    specifications: {
-      Material: "80% Algodão, 20% Poliéster",
-      Gramatura: "320g/m²",
-      Origem: "Brasil",
-      Cuidados: "Lavar à máquina até 30°C",
-      Modelo: "Hoodie Oversized",
-    },
-  },
+interface Product {
+  id: string | number
+  _id?: string            // se vier do Mongo
+  name: string
+  description: string
+  price: number
+  originalPrice?: number
+  image?: string          // capa do produto
+  images?: string[]       // galeria
+  category?: string
+  subCategory?: string
+  brand?: string
+  sizes?: string[]
+  colors?: { name: string; value: string }[]
+  inStock?: boolean
+  stockCount?: number
+  rating?: number
+  reviewCount?: number
+  features?: string[]
+  specifications?: Record<string, string>
 }
 
-// Mock reviews data
+// Mock reviews
 const mockReviews = [
   {
     id: 1,
@@ -152,24 +111,55 @@ const relatedProducts = [
   },
 ]
 
-interface ProductPageProps {
-  params: { id: string }
-}
-
-export default function ProductPage({ params }: ProductPageProps) {
+export default function ProductPage({ params }: { params: { id: string | number } }) {
   const { id } = params
 
-  const product = productData[id as unknown as keyof typeof productData]
-
-  if (!product) {
-    notFound()
-  }
-  
+  const [product, setProduct] = useState<Product | null>(null)
+  const [loading, setLoading] = useState(true)
   const [selectedImage, setSelectedImage] = useState(0)
   const [selectedSize, setSelectedSize] = useState("")
-  const [selectedColor, setSelectedColor] = useState(product.colors[0])
+  const [selectedColor, setSelectedColor] = useState<{ name: string; value: string } | null>(null)
   const [quantity, setQuantity] = useState(1)
   const [isWishlisted, setIsWishlisted] = useState(false)
+
+  // Buscar produto do banco
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const res = await fetch(`/api/products/${id}`)
+        if (!res.ok) {
+          setProduct(null)
+          return
+        }
+        const data = await res.json()
+        setProduct(data)
+        if (data.colors?.length > 0) {
+          setSelectedColor(data.colors[0])
+        }
+      } catch (err) {
+        console.error(err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchProduct()
+  }, [id])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p>Carregando produto...</p>
+      </div>
+    )
+  }
+
+  if (!product) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p>Produto não encontrado.</p>
+      </div>
+    )
+  }
 
   const handleAddToCart = () => {
     if (!selectedSize) {
@@ -178,22 +168,21 @@ export default function ProductPage({ params }: ProductPageProps) {
     }
 
     const cartItem = {
-      id: product.id,
+      id: product._id,
       name: product.name,
       price: product.price,
-      image: product.images[0],
+      image: product.images?.[0] || "/placeholder.svg",
       size: selectedSize,
-      color: selectedColor.name,
+      color: selectedColor?.name || "",
       quantity,
     }
 
     console.log("Added to cart:", cartItem)
-    // Here you would typically dispatch to a cart context or state management
   }
 
   const handleQuantityChange = (change: number) => {
     const newQuantity = quantity + change
-    if (newQuantity >= 1 && newQuantity <= product.stockCount) {
+    if (newQuantity >= 1 && newQuantity <= (product?.stockCount || 1)) {
       setQuantity(newQuantity)
     }
   }
@@ -207,26 +196,28 @@ export default function ProductPage({ params }: ProductPageProps) {
     ))
   }
 
-  const discount = product.originalPrice
+  const discount = product?.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : 0
 
   return (
     <div className="min-h-screen">
-      <Header />
+      <Header 
+        onCategoryClick={() => console.log("Category clicked")} 
+        onAvatarClick={() => console.log("Avatar clicked")} 
+      />
 
       <main className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Product Images */}
           <div className="space-y-4">
-            {/* Main Image */}
             <div className="aspect-square overflow-hidden rounded-lg border">
               <Dialog>
                 <DialogTrigger asChild>
                   <div className="relative cursor-zoom-in group">
                     <img
-                      src={product.images[selectedImage] || "/placeholder.svg"}
-                      alt={product.name}
+                      src={product?.images?.[selectedImage] || "/placeholder.svg"}
+                      alt={product?.name || "Produto"}
                       className="w-full h-full object-cover transition-transform group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
@@ -236,17 +227,17 @@ export default function ProductPage({ params }: ProductPageProps) {
                 </DialogTrigger>
                 <DialogContent className="max-w-4xl">
                   <img
-                    src={product.images[selectedImage] || "/placeholder.svg"}
-                    alt={product.name}
+                    src={product?.images?.[selectedImage] || "/placeholder.svg"}
+                    alt={product?.name || "Produto"}
                     className="w-full h-auto max-h-[80vh] object-contain"
                   />
                 </DialogContent>
               </Dialog>
             </div>
 
-            {/* Thumbnail Images */}
+            {/* Thumbnails */}
             <div className="grid grid-cols-4 gap-2">
-              {product.images.map((image, index) => (
+              {product?.images?.map((image, index) => (
                 <button
                   key={index}
                   onClick={() => setSelectedImage(index)}
@@ -266,7 +257,6 @@ export default function ProductPage({ params }: ProductPageProps) {
 
           {/* Product Info */}
           <div className="space-y-6">
-            {/* Header */}
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Badge variant="secondary">{product.brand}</Badge>
@@ -274,7 +264,7 @@ export default function ProductPage({ params }: ProductPageProps) {
               </div>
               <h1 className="text-3xl font-bold">{product.name}</h1>
               <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1">{renderStars(product.rating)}</div>
+                <div className="flex items-center gap-1">{renderStars(product.rating || 0)}</div>
                 <span className="text-sm text-muted-foreground">
                   {product.rating} ({product.reviewCount} avaliações)
                 </span>
@@ -284,7 +274,9 @@ export default function ProductPage({ params }: ProductPageProps) {
             {/* Price */}
             <div className="space-y-1">
               <div className="flex items-center gap-3">
-                <span className="text-3xl font-bold text-primary">R$ {product.price.toFixed(2).replace(".", ",")}</span>
+                <span className="text-3xl font-bold text-primary">
+                  R$ {product.price.toFixed(2).replace(".", ",")}
+                </span>
                 {product.originalPrice && (
                   <span className="text-lg text-muted-foreground line-through">
                     R$ {product.originalPrice.toFixed(2).replace(".", ",")}
@@ -299,47 +291,58 @@ export default function ProductPage({ params }: ProductPageProps) {
             {/* Description */}
             <p className="text-muted-foreground leading-relaxed">{product.description}</p>
 
-            {/* Color Selection */}
-            <div className="space-y-3">
-              <Label className="text-sm font-medium">Cor: {selectedColor.name}</Label>
-              <div className="flex gap-2">
-                {product.colors.map((color) => (
-                  <button
-                    key={color.name}
-                    onClick={() => setSelectedColor(color)}
-                    className={`w-8 h-8 rounded-full border-2 transition-colors ${
-                      selectedColor.name === color.name ? "border-primary" : "border-border hover:border-primary/50"
-                    }`}
-                    style={{ backgroundColor: color.value }}
-                    title={color.name}
-                  />
-                ))}
+            {/* Colors */}
+            {product.colors && product.colors.length > 0 && (
+              <div className="space-y-3">
+                <Label className="text-sm font-medium">Cor: {selectedColor?.name}</Label>
+                <div className="flex gap-2">
+                  {product.colors.map((color) => (
+                    <button
+                      key={color.name}
+                      onClick={() => setSelectedColor(color)}
+                      className={`w-8 h-8 rounded-full border-2 transition-colors ${
+                        selectedColor?.name === color.name
+                          ? "border-primary"
+                          : "border-border hover:border-primary/50"
+                      }`}
+                      style={{ backgroundColor: color.value }}
+                      title={color.name}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
-            {/* Size Selection */}
-            <div className="space-y-3">
-              <Label className="text-sm font-medium">Tamanho</Label>
-              <div className="grid grid-cols-4 gap-2">
-                {product.sizes.map((size) => (
-                  <Button
-                    key={size}
-                    variant={selectedSize === size ? "default" : "outline"}
-                    onClick={() => setSelectedSize(size)}
-                    className="h-12"
-                  >
-                    {size}
-                  </Button>
-                ))}
+            {/* Sizes */}
+            {product.sizes && product.sizes.length > 0 && (
+              <div className="space-y-3">
+                <Label className="text-sm font-medium">Tamanho</Label>
+                <div className="grid grid-cols-4 gap-2">
+                  {product.sizes.map((size) => (
+                    <Button
+                      key={size}
+                      variant={selectedSize === size ? "default" : "outline"}
+                      onClick={() => setSelectedSize(size)}
+                      className="h-12"
+                    >
+                      {size}
+                    </Button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Quantity */}
             <div className="space-y-3">
               <Label className="text-sm font-medium">Quantidade</Label>
               <div className="flex items-center gap-3">
                 <div className="flex items-center border rounded-lg">
-                  <Button variant="ghost" size="icon" onClick={() => handleQuantityChange(-1)} disabled={quantity <= 1}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleQuantityChange(-1)}
+                    disabled={quantity <= 1}
+                  >
                     <Minus className="h-4 w-4" />
                   </Button>
                   <span className="px-4 py-2 min-w-[3rem] text-center">{quantity}</span>
@@ -396,7 +399,7 @@ export default function ProductPage({ params }: ProductPageProps) {
           </div>
         </div>
 
-        {/* Product Details Tabs */}
+        {/* Tabs */}
         <div className="mt-16">
           <Tabs defaultValue="details" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
@@ -410,12 +413,12 @@ export default function ProductPage({ params }: ProductPageProps) {
                 <CardContent className="p-6">
                   <h3 className="font-semibold mb-4">Características do Produto</h3>
                   <ul className="space-y-2">
-                    {product.features.map((feature, index) => (
+                    {product.features?.map((feature, index) => (
                       <li key={index} className="flex items-center gap-2">
                         <div className="w-1.5 h-1.5 bg-primary rounded-full" />
                         <span>{feature}</span>
                       </li>
-                    ))}
+                    )) || <p className="text-muted-foreground">Nenhuma característica informada.</p>}
                   </ul>
                 </CardContent>
               </Card>
@@ -426,12 +429,14 @@ export default function ProductPage({ params }: ProductPageProps) {
                 <CardContent className="p-6">
                   <h3 className="font-semibold mb-4">Especificações Técnicas</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {Object.entries(product.specifications).map(([key, value]) => (
-                      <div key={key} className="flex justify-between py-2 border-b border-border">
-                        <span className="font-medium">{key}:</span>
-                        <span className="text-muted-foreground">{value}</span>
-                      </div>
-                    ))}
+                    {product.specifications
+                      ? Object.entries(product.specifications).map(([key, value]) => (
+                          <div key={key} className="flex justify-between py-2 border-b border-border">
+                            <span className="font-medium">{key}:</span>
+                            <span className="text-muted-foreground">{value}</span>
+                          </div>
+                        ))
+                      : <p className="text-muted-foreground">Nenhuma especificação informada.</p>}
                   </div>
                 </CardContent>
               </Card>
@@ -445,8 +450,12 @@ export default function ProductPage({ params }: ProductPageProps) {
                     <div className="flex items-center gap-6">
                       <div className="text-center">
                         <div className="text-4xl font-bold text-primary">{product.rating}</div>
-                        <div className="flex items-center justify-center gap-1 mt-1">{renderStars(product.rating)}</div>
-                        <div className="text-sm text-muted-foreground mt-1">{product.reviewCount} avaliações</div>
+                        <div className="flex items-center justify-center gap-1 mt-1">
+                          {renderStars(product.rating || 0)}
+                        </div>
+                        <div className="text-sm text-muted-foreground mt-1">
+                          {product.reviewCount} avaliações
+                        </div>
                       </div>
                       <Separator orientation="vertical" className="h-16" />
                       <div className="flex-1">
@@ -512,7 +521,7 @@ export default function ProductPage({ params }: ProductPageProps) {
           </Tabs>
         </div>
 
-        {/* Related Products */}
+        {/* Related */}
         <div className="mt-16">
           <ProductCarousel title="Produtos Relacionados" products={relatedProducts} />
         </div>
@@ -523,7 +532,14 @@ export default function ProductPage({ params }: ProductPageProps) {
   )
 }
 
-function Label({ children, className, ...props }: { children: React.ReactNode; className?: string }) {
+function Label({
+  children,
+  className,
+  ...props
+}: {
+  children: React.ReactNode
+  className?: string
+}) {
   return (
     <label
       className={`text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 ${className}`}

@@ -22,7 +22,7 @@ interface CartItem {
   size?: string
   color?: string
   quantity: number
-  stock: number
+  stockCount: number
 }
 
 export default function CartPage() {
@@ -60,7 +60,7 @@ export default function CartPage() {
   const shipping = subtotal >= 150 ? 0 : 15.9
   const total = subtotal - couponDiscount + shipping
 
-  const hasOutOfStockItems = cartItems.some((item) => item.stock <= 0)
+  const hasOutOfStockItems = cartItems.some((item) => (item.stockCount ?? 0) <= 0)
 
   // Estado: carrinho vazio
   if (cartItems.length === 0) {
@@ -116,107 +116,110 @@ export default function CartPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Lista de Produtos */}
           <div className="lg:col-span-2 space-y-4">
-            {cartItems.map((item) => (
-              <Card key={`${item.id}-${item.size}-${item.color}`}>
-                <CardContent className="p-6">
-                  <div className="flex gap-4">
-                    {/* Imagem */}
-                    <div className="flex-shrink-0">
-                      <Link href={`/produto/${item.id}`}>
-                        <img
-                          src={item.image || "/placeholder.svg"}
-                          alt={item.name}
-                          className="w-24 h-24 object-cover rounded-lg hover:opacity-80 transition-opacity"
-                        />
-                      </Link>
-                    </div>
-
-                    {/* Info do produto */}
-                    <div className="flex-1 space-y-2">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <Link href={`/produto/${item.id}`}>
-                            <h3 className="font-semibold hover:text-primary transition-colors">{item.name}</h3>
-                          </Link>
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <span>Tamanho: {item.size}</span>
-                            <span>•</span>
-                            <span>Cor: {item.color}</span>
-                          </div>
-                          {item.stock > 0 ? (
-                            <Badge variant="outline" className="mt-1">
-                              {item.stock} em estoque
-                            </Badge>
-                          ) : (
-                            <Badge variant="destructive" className="mt-1">
-                              Fora de estoque
-                            </Badge>
-                          )}
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => removeFromCart(item.id, item.size, item.color)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+            {cartItems.map((item) => {
+              const availableStock = Math.max(0, (item.stockCount ?? 0) - item.quantity)
+              return (
+                <Card key={`${item.id}-${item.size}-${item.color}`}>
+                  <CardContent className="p-6">
+                    <div className="flex gap-4">
+                      {/* Imagem */}
+                      <div className="flex-shrink-0">
+                        <Link href={`/produto/${item.id}`}>
+                          <img
+                            src={item.image || "/placeholder.svg"}
+                            alt={item.name}
+                            className="w-24 h-24 object-cover rounded-lg hover:opacity-80 transition-opacity"
+                          />
+                        </Link>
                       </div>
 
-                      {/* Preço e Quantidade */}
-                      <div className="flex justify-between items-center">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-semibold text-primary">
-                              R$ {item.price.toFixed(2).replace(".", ",")}
-                            </span>
-                            {item.originalPrice && (
-                              <span className="text-sm text-muted-foreground line-through">
-                                R$ {item.originalPrice.toFixed(2).replace(".", ",")}
-                              </span>
+                      {/* Info do produto */}
+                      <div className="flex-1 space-y-2">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <Link href={`/produto/${item.id}`}>
+                              <h3 className="font-semibold hover:text-primary transition-colors">{item.name}</h3>
+                            </Link>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <span>Tamanho: {item.size}</span>
+                              <span>•</span>
+                              <span>Cor: {item.color}</span>
+                            </div>
+                            {availableStock > 0 ? (
+                              <Badge variant="outline" className="mt-1">
+                                {availableStock} em estoque
+                              </Badge>
+                            ) : (
+                              <Badge variant="destructive" className="mt-1">
+                                Fora de estoque
+                              </Badge>
                             )}
                           </div>
-                          {item.originalPrice && (
-                            <div className="text-xs text-green-600">
-                              Você economiza R${" "}
-                              {((item.originalPrice - item.price) * item.quantity).toFixed(2).replace(".", ",")}
-                            </div>
-                          )}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeFromCart(item.id, item.size, item.color)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
 
-                        {/* Controles de quantidade */}
-                        <div className="flex items-center border rounded-lg">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() =>
-                              updateQuantity(item.id, item.quantity - 1, item.size, item.color)
-                            }
-                            disabled={item.quantity <= 1}
-                          >
-                            <Minus className="h-3 w-3" />
-                          </Button>
+                        {/* Preço e Quantidade */}
+                        <div className="flex justify-between items-center">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-primary">
+                                R$ {item.price.toFixed(2).replace(".", ",")}
+                              </span>
+                              {item.originalPrice && (
+                                <span className="text-sm text-muted-foreground line-through">
+                                  R$ {item.originalPrice.toFixed(2).replace(".", ",")}
+                                </span>
+                              )}
+                            </div>
+                            {item.originalPrice && (
+                              <div className="text-xs text-green-600">
+                                Você economiza R${" "}
+                                {((item.originalPrice - item.price) * item.quantity).toFixed(2).replace(".", ",")}
+                              </div>
+                            )}
+                          </div>
 
-                          <span className="px-3 py-1 min-w-[2rem] text-center text-sm">{item.quantity}</span>
+                          {/* Controles de quantidade */}
+                          <div className="flex items-center border rounded-lg">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() =>
+                                updateQuantity(item.id, item.quantity - 1, item.size, item.color)
+                              }
+                              disabled={item.quantity <= 1}
+                            >
+                              <Minus className="h-3 w-3" />
+                            </Button>
 
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() =>
-                              updateQuantity(item.id, item.quantity + 1, item.size, item.color)
-                            }
-                            disabled={item.quantity >= item.stock}
-                          >
-                            <Plus className="h-3 w-3" />
-                          </Button>
+                            <span className="px-3 py-1 min-w-[2rem] text-center text-sm">{item.quantity}</span>
+
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() =>
+                                updateQuantity(item.id, item.quantity + 1, item.size, item.color)
+                              }
+                              disabled={availableStock <= 0}
+                            >
+                              <Plus className="h-3 w-3" />
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              )
+            })}
 
             {/* Continuar comprando */}
             <div className="pt-4">

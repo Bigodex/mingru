@@ -61,11 +61,11 @@ export function ProductCarousel({ title, products }: ProductCarouselProps) {
         >
           {products.map((product) => (
             <Card
-              key={product.id}
-              className="flex-shrink-2 w-64 hover:shadow-lg transition-shadow bg-card p-0 flex flex-col"
+              key={product._id || product.id}
+              className="flex-shrink-2 w-64 hover:shadow-lg transition-shadow bg-muted p-0 flex flex-col"
             >
               <CardContent className="p-0 flex-1 flex flex-col">
-                <Link href={`/produto/${product.id}`}>
+                <Link href={`/produto/${product._id || product.id}`}>
                   <div className="aspect-[3/5] overflow-hidden rounded-t-lg">
                     <img
                       src={product.image || "/placeholder.svg"}
@@ -78,7 +78,7 @@ export function ProductCarousel({ title, products }: ProductCarouselProps) {
                 {/* Conteúdo centralizado e limitado */}
                 <div className="p-4 space-y-4 text-center flex-1 flex flex-col justify-between">
                   <div>
-                    <Link href={`/produto/${product.id}`}>
+                    <Link href={`/produto/${product._id || product.id}`}>
                       <h3 className="font-semibold hover:text-primary transition-colors line-clamp-2">
                         {product.name}
                       </h3>
@@ -96,7 +96,16 @@ export function ProductCarousel({ title, products }: ProductCarouselProps) {
 
               {/* Botão sempre no rodapé */}
               <CardFooter className="p-4 pt-0">
-                <Button className="w-full justify-center bg-primary/70 border" onClick={() => addToCart(product)}>
+                <Button
+                  className="w-full justify-center bg-primary/70 border"
+                  onClick={() =>
+                    addToCart({
+                      ...product,
+                      stockCount: product.stockCount ?? 10, // usa se vier do JSON/DB
+                      quantity: 1 // inicializa sempre em 1
+                    })
+                  }
+                >
                   <ShoppingCart className="h-4 w-4 mr-2" />
                   Adicionar ao Carrinho
                 </Button>
@@ -111,11 +120,11 @@ export function ProductCarousel({ title, products }: ProductCarouselProps) {
         <h2 className="col-span-2 text-xl font-bold">{title}</h2>
         {products.map((product) => (
           <Card
-            key={product.id}
-            className="hover:shadow-lg transition-shadow bg-primary/5 p-0 flex flex-col"
+            key={product._id || product.id}
+            className="hover:shadow-lg transition-shadow bg-muted p-0 flex flex-col"
           >
             <CardContent className="p-0 flex-1 flex flex-col">
-              <Link href={`/produto/${product.id}`}>
+              <Link href={`/produto/${product._id || product.id}`}>
                 <div className="aspect-[3/5] overflow-hidden rounded-t-lg">
                   <img
                     src={product.image || "/placeholder.svg"}
@@ -127,7 +136,7 @@ export function ProductCarousel({ title, products }: ProductCarouselProps) {
 
               <div className="p-2 pb-0 space-y-2 text-center flex-1 flex flex-col justify-between">
                 <div>
-                  <Link href={`/produto/${product.id}`}>
+                  <Link href={`/produto/${product._id || product.id}`}>
                     <h3 className="font-semibold hover:text-primary transition-colors line-clamp-2">
                       {product.name}
                     </h3>
@@ -143,7 +152,16 @@ export function ProductCarousel({ title, products }: ProductCarouselProps) {
               </div>
             </CardContent>
             <CardFooter className="p-3 pt-0">
-              <Button className="w-full justify-center bg-primary/70 border" onClick={() => addToCart(product)}>
+              <Button
+                className="w-full justify-center bg-primary/70 border"
+                onClick={() =>
+                  addToCart({
+                    ...product,
+                    stockCount: product.stockCount ?? 10,
+                    quantity: 1
+                  })
+                }
+              >
                 <ShoppingCart className="h-4 w-4 mr-2" />
                 +Adicionar
               </Button>

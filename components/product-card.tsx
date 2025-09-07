@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 
 interface Product {
-  id: number
+  _id: string
   name: string
   description: string
   price: number
@@ -26,10 +26,10 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
   }
 
   return (
-    <Card className="flex-shrink-0 w-64 hover:shadow-lg transition-shadow bg-card p-0 flex flex-col">
+    <Card className="flex-shrink-2 w-64 hover:shadow-lg transition-shadow bg-muted p-0 flex flex-col">
       <CardContent className="p-0 flex-1 flex flex-col">
         {/* Imagem */}
-        <Link href={`/produto/${product.id}`}>
+        <Link href={`/produto/${product._id}`}>
           <div className="aspect-[3/5] overflow-hidden rounded-t-lg">
             <img
               src={product.image || "/placeholder.svg"}
@@ -42,7 +42,7 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
         {/* Conteúdo */}
         <div className="p-4 space-y-4 text-center flex-1 flex flex-col justify-between">
           <div>
-            <Link href={`/produto/${product.id}`}>
+          <Link href={`/produto/${product._id}`}>
               <h3 className="font-semibold hover:text-primary transition-colors line-clamp-2">
                 {product.name}
               </h3>

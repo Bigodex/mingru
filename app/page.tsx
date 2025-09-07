@@ -28,6 +28,7 @@ export default function HomePage() {
 
   // separa por categoria
   const maisVendidos = products.filter((p) => p.category === "Mais Vendidos")
+  const bones = products.filter((p) => p.category === "Bones")
   const camisetas = products.filter((p) => p.category === "Camisetas")
   const calcas = products.filter((p) => p.category === "Calças")
   const jaquetas = products.filter((p) => p.category === "Jaquetas")
@@ -63,6 +64,7 @@ export default function HomePage() {
         <BenefitsBar />
         <div className="container mx-auto px-4 py-2 space-y-2">
           <ProductCarousel title="Mais Vendidos" products={maisVendidos} />
+          <ProductCarousel title="Bones" products={bones} />
           <ProductCarousel title="Camisetas Streetwear" products={camisetas} />
           <ProductCarousel title="Calças Largas" products={calcas} />
           <ProductCarousel title="Jaquetas Oversized" products={jaquetas} />
