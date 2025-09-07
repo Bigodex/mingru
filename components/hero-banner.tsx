@@ -3,22 +3,29 @@
 import { useState, useEffect } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useRouter } from "next/navigation"
 
 const bannerImages = [
   {
     id: 1,
     image: "/Banners/nike.svg",
     buttonText: "Ver Coleção Nike",
+    buttonPosition: "left-8 bottom-12 md:left-[95px] md:bottom-[40px] border border-border rounded-lg",
+    link: "/categories/Calcados/nike",
   },
   {
     id: 2,
     image: "/Banners/puma.svg",
     buttonText: "Explorar Puma",
+    buttonPosition: "top-[110px] left-[37%] -translate-x-[45%] md:top-[95px] md:left-[35%] md:-translate-x-[65%] rounded-lg border border-border",
+    link: "/categories/Calcados/puma",
   },
   {
     id: 3,
     image: "/Banners/vans.svg",
     buttonText: "Conferir Vans",
+    buttonPosition: "left-1/2 -translate-x-1/2 bottom-20 rounded-lg",
+    link: "/categories/Calcados/vans",
   },
 ]
 
@@ -27,26 +34,18 @@ export function HeroBanner() {
   const [touchStartX, setTouchStartX] = useState<number | null>(null)
   const [touchEndX, setTouchEndX] = useState<number | null>(null)
   const minSwipeDistance = 50
+  const router = useRouter()
 
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % bannerImages.length)
     }, 5000)
-
     return () => clearInterval(timer)
   }, [])
 
-  const goToSlide = (index: number) => {
-    setCurrentSlide(index)
-  }
-
-  const goToPrevious = () => {
-    setCurrentSlide((prev) => (prev - 1 + bannerImages.length) % bannerImages.length)
-  }
-
-  const goToNext = () => {
-    setCurrentSlide((prev) => (prev + 1) % bannerImages.length)
-  }
+  const goToSlide = (index: number) => setCurrentSlide(index)
+  const goToPrevious = () => setCurrentSlide((prev) => (prev - 1 + bannerImages.length) % bannerImages.length)
+  const goToNext = () => setCurrentSlide((prev) => (prev + 1) % bannerImages.length)
 
   const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
     setTouchEndX(null)
@@ -67,7 +66,6 @@ export function HeroBanner() {
 
   return (
     <section className="relative h-[400px] overflow-hidden px-4 md:px-0 mt-4 md:mt-0 rounded-b-[10px] md:rounded-b-none">
-      {/* Banner Images */}
       <div
         className="relative h-full"
         onTouchStart={handleTouchStart}
@@ -87,9 +85,16 @@ export function HeroBanner() {
               className="w-full h-full object-cover rounded-b-[10px] rounded-t-[10px] md:rounded-none"
             />
 
-            {/* Botão em cada imagem */}
-            <div className="absolute bottom-35 left-1/2 transform -translate-x-1/2 md:left-8 md:transform-none">
-              <Button size="lg" className="shadow-lg">
+            {/* overlay to darken the image */}
+            <div className="absolute inset-0 bg-black/30 bg-opacity-40 rounded-b-[10px] rounded-t-[10px] md:rounded-none" />
+
+            {/* center the button both on mobile and web */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Button
+                size="lg"
+                className="shadow-lg"
+                onClick={() => router.push(banner.link)}
+              >
                 {banner.buttonText}
               </Button>
             </div>
@@ -97,7 +102,7 @@ export function HeroBanner() {
         ))}
       </div>
 
-      {/* Navigation Arrows */}
+      {/* Arrows */}
       <Button
         variant="ghost"
         size="icon"
@@ -116,7 +121,7 @@ export function HeroBanner() {
         <ChevronRight className="h-6 w-6" />
       </Button>
 
-      {/* Slide Indicators */}
+      {/* Indicadores */}
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
         {bannerImages.map((_, index) => (
           <button

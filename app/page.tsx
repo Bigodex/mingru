@@ -6,17 +6,7 @@ import { BenefitsBar } from "@/components/benefits-bar"
 import { ProductCarousel } from "@/components/product-carousel"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-
-
-
-interface Product {
-  _id: string
-  name: string
-  description: string
-  price: number
-  image: string
-  category: string
-}
+import { Product } from "@/components/types"
 
 export default function HomePage() {
   const router = useRouter()

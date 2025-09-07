@@ -17,16 +17,12 @@ const benefits = [
     icon: RotateCcw,
     text: "Parcelamos em até 12x",
   },
-  {
-    icon: Headphones,
-    text: "Suporte 24/7",
-  },
 ]
 
 
 export function BenefitsBar() {
   return (
-    <section className="hidden md:block bg-muted py-10 border border-border rounded-tl-none rounded-tr-none rounded-br-[30px] rounded-bl-[30px] mt-0 mx-6 lg:mx-100 shadow-md">
+    <section className="hidden lg:block bg-muted py-5 border border-border rounded-[50px] mt-5 mx-0 lg:mx-50 shadow-md">
       <div className="max-w-6xl mx-auto px-6">
       <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16">
         {benefits.map((benefit, index) => (

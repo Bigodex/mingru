@@ -11,70 +11,26 @@ import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-
-// Mock cart data
-const initialCartItems = [
-  {
-    id: 1,
-    name: "Camiseta Oversized Preta",
-    price: 89.9,
-    originalPrice: 119.9,
-    image: "/black-oversized-streetwear-t-shirt.jpg",
-    size: "M",
-    color: "Preto",
-    quantity: 2,
-    inStock: true,
-  },
-  {
-    id: 2,
-    name: "Hoodie Urban Style",
-    price: 159.9,
-    originalPrice: 199.9,
-    image: "/urban-style-hoodie-streetwear.jpg",
-    size: "G",
-    color: "Cinza",
-    quantity: 1,
-    inStock: true,
-  },
-  {
-    id: 3,
-    name: "Calça Cargo Bege",
-    price: 199.9,
-    originalPrice: null,
-    image: "/beige-cargo-pants-streetwear.jpg",
-    size: "42",
-    color: "Bege",
-    quantity: 1,
-    inStock: false,
-  },
-]
+import { useCart } from "@/contexts/CartContext"
 
 interface CartItem {
   id: number
   name: string
   price: number
-  originalPrice: number | null
+  originalPrice?: number | null
   image: string
-  size: string
-  color: string
+  size?: string
+  color?: string
   quantity: number
-  inStock: boolean
+  stock: number
 }
 
 export default function CartPage() {
-  const [cartItems, setCartItems] = useState<CartItem[]>(initialCartItems)
   const [couponCode, setCouponCode] = useState("")
   const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount: number } | null>(null)
+  const { cartItems, updateQuantity, removeFromCart } = useCart()
 
-  const updateQuantity = (id: number, newQuantity: number) => {
-    if (newQuantity < 1) return
-    setCartItems(cartItems.map((item) => (item.id === id ? { ...item, quantity: newQuantity } : item)))
-  }
-
-  const removeItem = (id: number) => {
-    setCartItems(cartItems.filter((item) => item.id !== id))
-  }
-
+  // Aplicar cupom
   const applyCoupon = () => {
     // Mock coupon validation
     const validCoupons = {
@@ -92,26 +48,28 @@ export default function CartPage() {
     }
   }
 
-  const removeCoupon = () => {
-    setAppliedCoupon(null)
-  }
+  const removeCoupon = () => setAppliedCoupon(null)
 
-  // Calculations
+  // Cálculos
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
   const savings = cartItems.reduce(
     (sum, item) => sum + (item.originalPrice ? (item.originalPrice - item.price) * item.quantity : 0),
-    0,
+    0
   )
   const couponDiscount = appliedCoupon ? (subtotal * appliedCoupon.discount) / 100 : 0
   const shipping = subtotal >= 150 ? 0 : 15.9
   const total = subtotal - couponDiscount + shipping
 
-  const hasOutOfStockItems = cartItems.some((item) => !item.inStock)
+  const hasOutOfStockItems = cartItems.some((item) => item.stock <= 0)
 
+  // Estado: carrinho vazio
   if (cartItems.length === 0) {
     return (
       <div className="min-h-screen">
-        <Header />
+        <Header 
+          onCategoryClick={() => console.log("Category clicked")} 
+          onAvatarClick={() => console.log("Avatar clicked")} 
+        />
         <main className="container mx-auto px-4 py-12">
           <div className="text-center space-y-6">
             <div className="mx-auto w-24 h-24 bg-muted rounded-full flex items-center justify-center">
@@ -131,9 +89,13 @@ export default function CartPage() {
     )
   }
 
+  // Estado: carrinho com produtos
   return (
     <div className="min-h-screen">
-      <Header />
+      <Header 
+        onCategoryClick={() => console.log("Category clicked")} 
+        onAvatarClick={() => console.log("Avatar clicked")} 
+      />
 
       <main className="container mx-auto px-4 py-8">
         {/* Header */}
@@ -145,18 +107,20 @@ export default function CartPage() {
           </Button>
           <div>
             <h1 className="text-3xl font-bold">Carrinho de Compras</h1>
-            <p className="text-muted-foreground">{cartItems.length} itens no seu carrinho</p>
+            <p className="text-muted-foreground">
+              {cartItems.reduce((sum, i) => sum + i.quantity, 0)} itens no seu carrinho
+            </p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Cart Items */}
+          {/* Lista de Produtos */}
           <div className="lg:col-span-2 space-y-4">
             {cartItems.map((item) => (
               <Card key={`${item.id}-${item.size}-${item.color}`}>
                 <CardContent className="p-6">
                   <div className="flex gap-4">
-                    {/* Product Image */}
+                    {/* Imagem */}
                     <div className="flex-shrink-0">
                       <Link href={`/produto/${item.id}`}>
                         <img
@@ -167,7 +131,7 @@ export default function CartPage() {
                       </Link>
                     </div>
 
-                    {/* Product Info */}
+                    {/* Info do produto */}
                     <div className="flex-1 space-y-2">
                       <div className="flex justify-between items-start">
                         <div>
@@ -179,18 +143,26 @@ export default function CartPage() {
                             <span>•</span>
                             <span>Cor: {item.color}</span>
                           </div>
-                          {!item.inStock && (
+                          {item.stock > 0 ? (
+                            <Badge variant="outline" className="mt-1">
+                              {item.stock} em estoque
+                            </Badge>
+                          ) : (
                             <Badge variant="destructive" className="mt-1">
                               Fora de estoque
                             </Badge>
                           )}
                         </div>
-                        <Button variant="ghost" size="icon" onClick={() => removeItem(item.id)}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => removeFromCart(item.id, item.size, item.color)}
+                        >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
 
-                      {/* Price and Quantity */}
+                      {/* Preço e Quantidade */}
                       <div className="flex justify-between items-center">
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
@@ -211,24 +183,30 @@ export default function CartPage() {
                           )}
                         </div>
 
-                        {/* Quantity Controls */}
+                        {/* Controles de quantidade */}
                         <div className="flex items-center border rounded-lg">
                           <Button
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8"
-                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                            disabled={item.quantity <= 1 || !item.inStock}
+                            onClick={() =>
+                              updateQuantity(item.id, item.quantity - 1, item.size, item.color)
+                            }
+                            disabled={item.quantity <= 1}
                           >
                             <Minus className="h-3 w-3" />
                           </Button>
+
                           <span className="px-3 py-1 min-w-[2rem] text-center text-sm">{item.quantity}</span>
+
                           <Button
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8"
-                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            disabled={!item.inStock}
+                            onClick={() =>
+                              updateQuantity(item.id, item.quantity + 1, item.size, item.color)
+                            }
+                            disabled={item.quantity >= item.stock}
                           >
                             <Plus className="h-3 w-3" />
                           </Button>
@@ -240,7 +218,7 @@ export default function CartPage() {
               </Card>
             ))}
 
-            {/* Continue Shopping */}
+            {/* Continuar comprando */}
             <div className="pt-4">
               <Button variant="outline" asChild className="bg-transparent">
                 <Link href="/">
@@ -251,9 +229,9 @@ export default function CartPage() {
             </div>
           </div>
 
-          {/* Order Summary */}
+          {/* Resumo do pedido */}
           <div className="space-y-6">
-            {/* Coupon */}
+            {/* Cupom */}
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Cupom de Desconto</CardTitle>
@@ -288,7 +266,7 @@ export default function CartPage() {
               </CardContent>
             </Card>
 
-            {/* Order Summary */}
+            {/* Resumo */}
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Resumo do Pedido</CardTitle>
@@ -349,7 +327,7 @@ export default function CartPage() {
                   </Link>
                 </Button>
 
-                {/* Payment Methods */}
+                {/* Métodos de pagamento */}
                 <div className="text-center space-y-2">
                   <div className="text-sm text-muted-foreground">Formas de pagamento aceitas:</div>
                   <div className="flex justify-center gap-2">
@@ -361,7 +339,7 @@ export default function CartPage() {
               </CardContent>
             </Card>
 
-            {/* Security Info */}
+            {/* Segurança */}
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center gap-3 text-sm">

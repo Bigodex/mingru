@@ -5,14 +5,8 @@ import Link from "next/link"
 import { ChevronLeft, ChevronRight, ShoppingCart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
-
-interface Product {
-  id: number
-  name: string
-  description: string
-  price: number
-  image: string
-}
+import { useCart } from "@/contexts/CartContext"
+import { Product } from "@/components/types"
 
 interface ProductCarouselProps {
   title: string
@@ -21,6 +15,7 @@ interface ProductCarouselProps {
 
 export function ProductCarousel({ title, products }: ProductCarouselProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
+  const { addToCart } = useCart()
 
   const scrollLeft = () => {
     if (scrollRef.current) {
@@ -32,11 +27,6 @@ export function ProductCarousel({ title, products }: ProductCarouselProps) {
     if (scrollRef.current) {
       scrollRef.current.scrollBy({ left: 300, behavior: "smooth" })
     }
-  }
-
-  const handleAddToCart = (product: Product) => {
-    // Handle add to cart logic
-    console.log("Added to cart:", product)
   }
 
   return (
@@ -106,7 +96,7 @@ export function ProductCarousel({ title, products }: ProductCarouselProps) {
 
               {/* Botão sempre no rodapé */}
               <CardFooter className="p-4 pt-0">
-                <Button className="w-full justify-center bg-primary/70 border" onClick={() => handleAddToCart(product)}>
+                <Button className="w-full justify-center bg-primary/70 border" onClick={() => addToCart(product)}>
                   <ShoppingCart className="h-4 w-4 mr-2" />
                   Adicionar ao Carrinho
                 </Button>
@@ -153,7 +143,7 @@ export function ProductCarousel({ title, products }: ProductCarouselProps) {
               </div>
             </CardContent>
             <CardFooter className="p-3 pt-0">
-              <Button className="w-full justify-center bg-primary/70 border" onClick={() => handleAddToCart(product)}>
+              <Button className="w-full justify-center bg-primary/70 border" onClick={() => addToCart(product)}>
                 <ShoppingCart className="h-4 w-4 mr-2" />
                 +Adicionar
               </Button>

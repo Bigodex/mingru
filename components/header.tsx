@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useCart } from "@/contexts/CartContext";
 import Link from "next/link";
 import Image from "next/image";
 import { useSession, signOut } from "next-auth/react";
@@ -22,8 +23,9 @@ interface HeaderProps {
 export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const { cartItems = [] } = useCart();
+  const totalQuantity = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
-  // Sessão do NextAuth
   const { data: session } = useSession();
 
   const navItems = [
@@ -83,14 +85,15 @@ export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <div className="flex items-center space-x-2 group">
-              <Home className="h-5 w-5 text-primary-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-              <div
-                className="text-2xl font-bold text-primary-foreground hover:translate-y-[-2px] transition-transform duration-200"
-                style={{ fontFamily: "Inter, sans-serif" }}
-              >
-                Mingru
-              </div>
+            <div className="flex items-center group relative">
+              <Home className="h-5 w-5 text-primary-foreground absolute opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+              <Image
+                src="/Branding/logo-texto.svg"
+                alt="Mingru"
+                width={120}
+                height={32}
+                className="object-contain transition-transform duration-200 transform translate-x-0 group-hover:translate-x-6"
+              />
             </div>
           </Link>
 
@@ -149,16 +152,26 @@ export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
           {/* Action Buttons */}
           <div className="flex items-center space-x-4">
             {/* Shopping Cart */}
-            <Button
-              variant="ghost"
-              size="icon"
-              asChild
-              className="hover:border hover:border-border"
-            >
-              <Link href="/carrinho">
-                <ShoppingCart className="h-5 w-5" />
-              </Link>
-            </Button>
+            <div className="relative">
+              <Button
+                variant="ghost"
+                size="icon"
+                asChild
+                className="hover:border hover:border-border"
+              >
+                <Link href="/carrinho">
+                  <ShoppingCart className="h-5 w-5" />
+                </Link>
+              </Button>
+
+              {totalQuantity > 0 && (
+                <span
+                  className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center border border-border"
+                >
+                  {totalQuantity}
+                </span>
+              )}
+            </div>
 
             {session ? (
               // Avatar + Greeting + Dropdown
@@ -181,7 +194,7 @@ export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
                   <DropdownMenuItem asChild>
                     <Link href="/perfil">Ver Perfil</Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => signOut({ callbackUrl: '/login' })}>
+                  <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/login" })}>
                     Sair
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -196,7 +209,7 @@ export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
                 >
                   <Link href="/login">Entrar</Link>
                 </Button>
-                <Button size="sm" asChild className="hidden md:flex">
+                <Button size="sm" asChild className="hidden md:flex border border-border">
                   <Link href="/cadastro">Cadastrar</Link>
                 </Button>
               </>
