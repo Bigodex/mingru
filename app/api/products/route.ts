@@ -1,38 +1,43 @@
-import clientPromise from "@/lib/mongodb";
-import { NextResponse } from "next/server";
-import { Product } from "@/lib/models";
+import { NextResponse } from "next/server"
+import clientPromise from "@/lib/mongodb"
 
-// GET -> Listar todos os produtos
 export async function GET() {
-  try {
-    const client = await clientPromise;
-    const db = client.db("mingruDB");
-    const products = await db.collection<Product>("products").find().toArray();
-
-    return NextResponse.json(products);
-  } catch (error) {
-    return NextResponse.json({ error: "Erro ao buscar produtos" }, { status: 500 });
-  }
+  const client = await clientPromise
+  const db = client.db("mingruDB")
+  const products = await db.collection("products").find().toArray()
+  return NextResponse.json(products)
 }
 
-// POST -> Criar novo produto
 export async function POST(req: Request) {
+  const client = await clientPromise
+  const db = client.db("mingruDB")
+
   try {
-    const client = await clientPromise;
-    const db = client.db("mingru");
-    const body = await req.json();
+    const data = await req.json()
 
-    const newProduct: Product = {
-      name: body.name,
-      description: body.description,
-      price: body.price,
-      image: body.image,
-    };
-
-    const result = await db.collection<Product>("products").insertOne(newProduct);
-
-    return NextResponse.json({ ...newProduct, _id: result.insertedId });
+    if (Array.isArray(data)) {
+      // Se for um array → insere vários produtos
+      const result = await db.collection("products").insertMany(
+        data.map((item) => ({ ...item, createdAt: new Date() }))
+      )
+      return NextResponse.json({
+        success: true,
+        insertedCount: result.insertedCount,
+        ids: result.insertedIds,
+      })
+    } else {
+      // Se for objeto único → insere só 1
+      const result = await db.collection("products").insertOne({
+        ...data,
+        createdAt: new Date(),
+      })
+      return NextResponse.json({
+        success: true,
+        id: result.insertedId,
+      })
+    }
   } catch (error) {
-    return NextResponse.json({ error: "Erro ao criar produto" }, { status: 500 });
+    console.error("Erro ao inserir produto(s):", error)
+    return NextResponse.json({ success: false, error: "Erro ao inserir produto(s)" }, { status: 500 })
   }
 }

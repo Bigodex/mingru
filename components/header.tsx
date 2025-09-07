@@ -31,7 +31,7 @@ export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
       name: "Camisetas",
       href: "/categoria/Camisetas",
       submenu: [
-        { name: "Oversized", href: "/categoria/Camisetas/oversized" },
+        { name: "Oversized", href: "/categoria/Camisetas/Oversized" },
         { name: "Longline", href: "/categoria/Camisetas/longline" },
         { name: "Graphic Tee", href: "/categoria/Camisetas/graphic-tee" },
         { name: "Tie Dye", href: "/categoria/Camisetas/tie-dye" },
@@ -43,7 +43,7 @@ export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
       name: "Calças",
       href: "/categoria/Calcas/calcas",
       submenu: [
-        { name: "Cargo", href: "/categoria/masculino/calcas/cargo" },
+        { name: "Cargo", href: "/categoria/masculino/Calças/cargo" },
         { name: "Jogger", href: "/categoria/masculino/calcas/jogger" },
         { name: "Wide Leg", href: "/categoria/masculino/calcas/wide-leg" },
         { name: "Jeans Ripped", href: "/categoria/masculino/calcas/jeans-ripped" },
