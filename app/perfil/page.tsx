@@ -1,128 +1,444 @@
 "use client";
 
-import React from "react";
+import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Pencil, User, MapPin, CreditCard } from "lucide-react";
 import { Header } from "@/components/header";
+import { Footer } from "@/components/footer";
 
-export default function ProfilePage() {
-  const user = {
-    name: "Pedro Silva",
-    email: "pedro.silva@example.com",
-    profilePicture: "/profile-picture.jpg",
-    phone: "(11) 98765-4321",
-    address: "Rua das Flores, 123, São Paulo, SP",
-    birthDate: "01/01/1990",
-    nationality: "Brasileiro",
-    maritalStatus: "Solteiro",
-    gender: "Masculino",
-    linkedin: "linkedin.com/in/pedro-silva",
-    github: "github.com/pedro-silva",
-    website: "www.pedrosilva.dev",
-    hobbies: ["Fotografia", "Ciclismo", "Leitura"],
-    paymentInfo: {
-      cardNumber: "**** **** **** 1234",
-      expiryDate: "12/25",
-      cardHolder: "Pedro Silva",
-    },
-    deliveryInfo: {
-      address: "Rua das Entregas, 456, São Paulo, SP",
-      city: "São Paulo",
-      state: "SP",
-      zipCode: "12345-678",
-      country: "Brasil",
-    },
+type Personal = {
+  avatarUrl: string | null;
+  name: string;
+  email: string;
+  birthdate: string;
+  hobby: string;
+};
+
+type Delivery = {
+  cep: string;
+  street: string;
+  number: string;
+  complement: string;
+  neighborhood: string;
+  city: string;
+  state: string;
+};
+
+type Payment = {
+  cardHolder: string;
+  cpf: string;
+  cardNumber: string;
+  cardExpiry: string;
+  cardCvv: string;
+};
+
+export default function PerfilPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
+  // Protege rota
+  useEffect(() => {
+    if (status === "unauthenticated") router.push("/login");
+  }, [status, router]);
+
+  const [personal, setPersonal] = useState<Personal>({
+    avatarUrl: null,
+    name: "",
+    email: "",
+    birthdate: "",
+    hobby: "",
+  });
+
+  const [delivery, setDelivery] = useState<Delivery>({
+    cep: "",
+    street: "",
+    number: "",
+    complement: "",
+    neighborhood: "",
+    city: "",
+    state: "",
+  });
+
+  const [payment, setPayment] = useState<Payment>({
+    cardHolder: "",
+    cpf: "",
+    cardNumber: "",
+    cardExpiry: "",
+    cardCvv: "",
+  });
+
+  const [editPersonal, setEditPersonal] = useState(false);
+  const [editDelivery, setEditDelivery] = useState(false);
+  const [editPayment, setEditPayment] = useState(false);
+
+  // Preenche com sessão
+  useEffect(() => {
+    if (session?.user) {
+      setPersonal((p) => ({
+        ...p,
+        name: session.user.name ?? p.name,
+        email: session.user.email ?? p.email,
+      }));
+    }
+  }, [session]);
+
+  // Busca perfil salvo no banco
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const res = await fetch("/api/profile");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.personal) setPersonal(data.personal);
+        if (data.delivery) setDelivery(data.delivery);
+        if (data.payment) setPayment(data.payment);
+      }
+    };
+    fetchProfile();
+  }, []);
+
+  // Upload avatar
+  const handleFile = (file: File | null) => {
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    setPersonal((p) => ({ ...p, avatarUrl: url }));
   };
 
+  // Save handlers
+  const savePersonal = async () => {
+    try {
+      await fetch("/api/profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ personal }),
+      });
+      setEditPersonal(false);
+      alert("Informações pessoais salvas!");
+    } catch (err) {
+      console.error(err);
+      alert("Erro ao salvar informações pessoais.");
+    }
+  };
+
+  const saveDelivery = async () => {
+    try {
+      await fetch("/api/profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ delivery }),
+      });
+      setEditDelivery(false);
+      alert("Informações de entrega salvas!");
+    } catch (err) {
+      console.error(err);
+      alert("Erro ao salvar informações de entrega.");
+    }
+  };
+
+  const savePayment = async () => {
+    try {
+      await fetch("/api/profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ payment }),
+      });
+      setEditPayment(false);
+      alert("Informações de pagamento salvas!");
+    } catch (err) {
+      console.error(err);
+      alert("Erro ao salvar informações de pagamento.");
+    }
+  };
+
+  if (status === "loading") {
+    return <div className="container mx-auto px-4 py-10">Carregando…</div>;
+  }
+
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="flex flex-col min-h-screen bg-background text-foreground">
       <Header 
         onCategoryClick={() => console.log("Category clicked")} 
         onAvatarClick={() => console.log("Avatar clicked")} 
       />
-      <div className="container mx-auto px-4 py-12 flex justify-center space-x-8">
-        {/* Card de Informações Pessoais */}
-        <div className="bg-card shadow-lg rounded-lg p-6 w-96 border">
-          <h2 className="text-xl font-bold primary-foreground mb-4 text-center">Informações Pessoais</h2>
-          <div className="flex flex-col items-center">
-            <img
-              src={user.profilePicture}
-              alt="Foto de Perfil"
-              className="w-28 h-28 rounded-full border-4 border-foreground mb-4"
-            />
-            <h1 className="text-2xl font-bold">{user.name}</h1>
-            <p className="text-muted-foreground text-sm flex items-center mt-1">
-              <svg aria-hidden className="mr-2 w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
-                <rect x="3" y="5" width="18" height="14" rx="2" />
-                <path d="M3 7l9 6 9-6" />
-              </svg>
-              <span className="truncate">{user.email}</span>
-            </p>
-          </div>
-          <div className="mt-4 space-y-2">
-            <p className="text-muted-foreground">
-              <strong className="w-36">Telefone:</strong>
-              <span className="ml-2">{user.phone}</span>
-            </p>
-            <p className="text-muted-foreground">
-              <strong className="w-36">Data de Nascimento:</strong>
-              <span className="ml-2">{user.birthDate}</span>
-            </p>
-            <p className="text-muted-foreground">
-              <strong className="w-36">Nacionalidade:</strong>
-              <span className="ml-2">{user.nationality}</span>
-            </p>
-            <p className="text-muted-foreground">
-              <strong className="w-36">Estado Civil:</strong>
-              <span className="ml-2">{user.maritalStatus}</span>
-            </p>
-            <p className="text-muted-foreground">
-              <strong className="w-36">Gênero:</strong>
-              <span className="ml-2">{user.gender}</span>
-            </p>
-            <p className="text-muted-foreground">
-              <strong className="w-36">Hobbies:</strong>
-              <span className="ml-2">{user.hobbies.join(", ")}</span>
-            </p>
-          </div>
-        </div>
 
-        {/* Card de Informações de Entrega */}
-        <div className="bg-card shadow-lg rounded-lg p-6 w-96 border">
-          <h2 className="text-xl font-bold primary-foreground mb-4 text-center">Informações de Entrega</h2>
-          <div className="space-y-4">
-            <p className="text-muted-foreground">
-              <strong>Endereço:</strong> {user.deliveryInfo.address}
-            </p>
-            <p className="text-muted-foreground">
-              <strong>Cidade:</strong> {user.deliveryInfo.city}
-            </p>
-            <p className="text-muted-foreground">
-              <strong>Estado:</strong> {user.deliveryInfo.state}
-            </p>
-            <p className="text-muted-foreground">
-              <strong>CEP:</strong> {user.deliveryInfo.zipCode}
-            </p>
-            <p className="text-muted-foreground">
-              <strong>País:</strong> {user.deliveryInfo.country}
-            </p>
-          </div>
-        </div>
+      <main className="flex-1 container mx-auto px-4 py-10">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          {/* --------- CARD ESQUERDA – INFORMAÇÕES PESSOAIS --------- */}
+          <Card className="h-full flex flex-col">
+            <CardHeader className="flex justify-between items-center">
+              <CardTitle className="flex items-center flex-1 text-center">
+                <User className="mr-2 h-5 w-5" />
+                Informações Pessoais
+              </CardTitle>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setEditPersonal((prev) => !prev)}
+              >
+                <Pencil className="h-5 w-5" />
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-5 flex-1 flex flex-col">
+              <div className="flex flex-col items-center gap-3">
+                <div className="h-24 w-24 rounded-full overflow-hidden border">
+                  <img
+                    src={personal.avatarUrl || "/placeholder-user.jpg"}
+                    alt="Avatar"
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+                {editPersonal && (
+                  <label className="inline-block">
+                    <span className="sr-only">Escolher foto</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => handleFile(e.target.files?.[0] ?? null)}
+                    />
+                    <Button variant="outline" type="button">
+                      Trocar foto
+                    </Button>
+                  </label>
+                )}
+              </div>
 
-        {/* Card de Informações de Pagamento */}
-        <div className="bg-card shadow-lg rounded-lg p-6 w-96 border">
-          <h2 className="text-xl font-bold primary-foreground mb-4 text-center">Informações de Pagamento</h2>
-          <div className="space-y-4">
-            <p className="text-muted-foreground">
-              <strong>Número do Cartão:</strong> {user.paymentInfo.cardNumber}
-            </p>
-            <p className="text-muted-foreground">
-              <strong>Validade:</strong> {user.paymentInfo.expiryDate}
-            </p>
-            <p className="text-muted-foreground">
-              <strong>Titular:</strong> {user.paymentInfo.cardHolder}
-            </p>
-          </div>
+              <div className="space-y-2">
+                <Label htmlFor="name">Nome</Label>
+                <Input
+                  id="name"
+                  className="border border-border"
+                  value={personal.name}
+                  readOnly={!editPersonal}
+                  onChange={(e) =>
+                    setPersonal({ ...personal, name: e.target.value })
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  className="border border-border"
+                  type="email"
+                  value={personal.email}
+                  readOnly={!editPersonal}
+                  onChange={(e) =>
+                    setPersonal({ ...personal, email: e.target.value })
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="birthdate">Data de nascimento</Label>
+                <Input
+                  id="birthdate"
+                  className="border border-border"
+                  type="date"
+                  value={personal.birthdate}
+                  readOnly={!editPersonal}
+                  onChange={(e) =>
+                    setPersonal({ ...personal, birthdate: e.target.value })
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="hobby">Hobbie</Label>
+                <Input
+                  id="hobby"
+                  className="border border-border"
+                  value={personal.hobby}
+                  readOnly={!editPersonal}
+                  onChange={(e) =>
+                    setPersonal({ ...personal, hobby: e.target.value })
+                  }
+                />
+              </div>
+
+              {editPersonal && (
+                <Button onClick={savePersonal} className="mt-auto w-full border">
+                  Salvar
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* --------- CARD CENTRO – INFORMAÇÕES DE ENTREGA --------- */}
+          <Card className="h-full flex flex-col">
+            <CardHeader className="flex justify-between items-center">
+              <CardTitle className="flex items-center flex-1 text-center">
+                <MapPin className="mr-2 h-5 w-5" />
+                Informações de Entrega
+              </CardTitle>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setEditDelivery((prev) => !prev)}
+              >
+                <Pencil className="h-5 w-5" />
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-5 flex-1 flex flex-col">
+              <div className="h-56 w-full rounded-md bg-muted/50 border flex items-center justify-center text-sm text-muted-foreground">
+                Google Maps aqui (placeholder)
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {[
+                  { id: "cep", label: "CEP", placeholder: "00000-000" },
+                  { id: "street", label: "Rua", placeholder: "Rua/Avenida" },
+                  { id: "number", label: "Número", placeholder: "Nº" },
+                  {
+                    id: "complement",
+                    label: "Complemento",
+                    placeholder: "Apto, bloco, referência…",
+                  },
+                  { id: "neighborhood", label: "Bairro" },
+                  { id: "city", label: "Cidade" },
+                  {
+                    id: "state",
+                    label: "Estado (UF)",
+                    placeholder: "SP, RJ, MG…",
+                  },
+                ].map((field) => (
+                  <div
+                    key={field.id}
+                    className={`space-y-2 ${
+                      field.id === "state" ? "sm:col-span-2" : ""
+                    }`}
+                  >
+                    <Label htmlFor={field.id}>{field.label}</Label>
+                    <Input
+                      id={field.id}
+                      className="border border-border"
+                      placeholder={field.placeholder}
+                      value={(delivery as any)[field.id]}
+                      readOnly={!editDelivery}
+                      onChange={(e) =>
+                        setDelivery({ ...delivery, [field.id]: e.target.value })
+                      }
+                    />
+                  </div>
+                ))}
+              </div>
+
+              {editDelivery && (
+                <Button onClick={saveDelivery} className="mt-auto w-full border">
+                  Salvar
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* --------- CARD DIREITA – INFORMAÇÕES DE PAGAMENTO --------- */}
+          <Card className="h-full flex flex-col">
+            <CardHeader className="flex justify-between items-center">
+              <CardTitle className="flex items-center flex-1 text-center">
+                <CreditCard className="mr-2 h-5 w-5" />
+                Informações de Pagamento
+              </CardTitle>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setEditPayment((prev) => !prev)}
+              >
+                <Pencil className="h-5 w-5" />
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-5 flex-1 flex flex-col">
+              <div className="h-40 w-full rounded-md bg-muted/50 border flex items-center justify-center text-sm text-muted-foreground">
+                Widget do cartão aqui (placeholder)
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="cardHolder">Nome impresso no cartão</Label>
+                <Input
+                  id="cardHolder"
+                  className="border border-border"
+                  value={payment.cardHolder}
+                  readOnly={!editPayment}
+                  onChange={(e) =>
+                    setPayment({ ...payment, cardHolder: e.target.value })
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="cpf">CPF</Label>
+                <Input
+                  id="cpf"
+                  className="border border-border"
+                  inputMode="numeric"
+                  placeholder="000.000.000-00"
+                  value={payment.cpf}
+                  readOnly={!editPayment}
+                  onChange={(e) =>
+                    setPayment({ ...payment, cpf: e.target.value })
+                  }
+                />
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="cardNumber">Número do cartão</Label>
+                  <Input
+                    id="cardNumber"
+                    className="border border-border"
+                    inputMode="numeric"
+                    placeholder="**** **** **** ****"
+                    value={payment.cardNumber}
+                    readOnly={!editPayment}
+                    onChange={(e) =>
+                      setPayment({ ...payment, cardNumber: e.target.value })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="cardExpiry">Validade (MM/AA)</Label>
+                  <Input
+                    id="cardExpiry"
+                    className="border border-border"
+                    placeholder="MM/AA"
+                    value={payment.cardExpiry}
+                    readOnly={!editPayment}
+                    onChange={(e) =>
+                      setPayment({ ...payment, cardExpiry: e.target.value })
+                    }
+                  />
+                </div>
+                <div className="space-y-2 sm:col-span-2">
+                  <Label htmlFor="cardCvv">CVV</Label>
+                  <Input
+                    id="cardCvv"
+                    className="border border-border"
+                    inputMode="numeric"
+                    placeholder="***"
+                    value={payment.cardCvv}
+                    readOnly={!editPayment}
+                    onChange={(e) =>
+                      setPayment({ ...payment, cardCvv: e.target.value })
+                    }
+                  />
+                </div>
+              </div>
+
+              {editPayment && (
+                <Button onClick={savePayment} className="mt-auto w-full border">
+                  Salvar
+                </Button>
+              )}
+            </CardContent>
+          </Card>
         </div>
-      </div>
+      </main>
+
+      <Footer />
     </div>
   );
 }
