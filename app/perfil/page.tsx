@@ -13,10 +13,12 @@ import { Footer } from "@/components/footer";
 
 type Personal = {
   avatarUrl: string | null;
-  name: string;
-  email: string;
+  firstName: string;
+  lastName: string;
+  cpf: string;
   birthdate: string;
-  hobby: string;
+  email: string;
+  phone: string;
 };
 
 type Delivery = {
@@ -48,10 +50,12 @@ export default function PerfilPage() {
 
   const [personal, setPersonal] = useState<Personal>({
     avatarUrl: null,
-    name: "",
-    email: "",
+    firstName: "",
+    lastName: "",
+    cpf: "",
     birthdate: "",
-    hobby: "",
+    email: "",
+    phone: "",
   });
 
   const [delivery, setDelivery] = useState<Delivery>({
@@ -76,12 +80,11 @@ export default function PerfilPage() {
   const [editDelivery, setEditDelivery] = useState(false);
   const [editPayment, setEditPayment] = useState(false);
 
-  // Preenche com sessão
+  // Preenche com sessão (só email agora)
   useEffect(() => {
     if (session?.user) {
       setPersonal((p) => ({
         ...p,
-        name: session.user.name ?? p.name,
         email: session.user.email ?? p.email,
       }));
     }
@@ -208,32 +211,43 @@ export default function PerfilPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="name">Nome</Label>
+                <Label htmlFor="firstName">Nome</Label>
                 <Input
-                  id="name"
+                  id="firstName"
                   className="border border-border"
-                  value={personal.name}
+                  value={personal.firstName}
                   readOnly={!editPersonal}
                   onChange={(e) =>
-                    setPersonal({ ...personal, name: e.target.value })
+                    setPersonal({ ...personal, firstName: e.target.value })
                   }
                 />
               </div>
-
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="lastName">Sobrenome</Label>
                 <Input
-                  id="email"
+                  id="lastName"
                   className="border border-border"
-                  type="email"
-                  value={personal.email}
+                  value={personal.lastName}
                   readOnly={!editPersonal}
                   onChange={(e) =>
-                    setPersonal({ ...personal, email: e.target.value })
+                    setPersonal({ ...personal, lastName: e.target.value })
                   }
                 />
               </div>
-
+              <div className="space-y-2">
+                <Label htmlFor="cpf">CPF</Label>
+                <Input
+                  id="cpf"
+                  className="border border-border"
+                  inputMode="numeric"
+                  placeholder="000.000.000-00"
+                  value={personal.cpf}
+                  readOnly={!editPersonal}
+                  onChange={(e) =>
+                    setPersonal({ ...personal, cpf: e.target.value })
+                  }
+                />
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="birthdate">Data de nascimento</Label>
                 <Input
@@ -247,16 +261,30 @@ export default function PerfilPage() {
                   }
                 />
               </div>
-
               <div className="space-y-2">
-                <Label htmlFor="hobby">Hobbie</Label>
+                <Label htmlFor="email">Email</Label>
                 <Input
-                  id="hobby"
+                  id="email"
                   className="border border-border"
-                  value={personal.hobby}
+                  type="email"
+                  value={personal.email}
                   readOnly={!editPersonal}
                   onChange={(e) =>
-                    setPersonal({ ...personal, hobby: e.target.value })
+                    setPersonal({ ...personal, email: e.target.value })
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone">Telefone</Label>
+                <Input
+                  id="phone"
+                  className="border border-border"
+                  inputMode="tel"
+                  placeholder="(00) 00000-0000"
+                  value={personal.phone}
+                  readOnly={!editPersonal}
+                  onChange={(e) =>
+                    setPersonal({ ...personal, phone: e.target.value })
                   }
                 />
               </div>

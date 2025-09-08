@@ -1,11 +1,11 @@
-import NextAuth from "next-auth"
+import NextAuth, { type NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import GoogleProvider from "next-auth/providers/google"
 import { MongoDBAdapter } from "@next-auth/mongodb-adapter"
 import clientPromise from "@/lib/mongodb"
 import bcrypt from "bcryptjs"
 
-const handler = NextAuth({
+export const authOptions: NextAuthOptions = {
   adapter: MongoDBAdapter(clientPromise, { databaseName: "mingruDB" }),
   providers: [
     CredentialsProvider({
@@ -24,18 +24,13 @@ const handler = NextAuth({
 
         if (!user) throw new Error("Usuário não encontrado")
 
-        const isValid = await bcrypt.compare(
-          credentials!.password,
-          user.password
-        )
+        const isValid = await bcrypt.compare(credentials!.password, user.password)
         if (!isValid) throw new Error("Senha incorreta")
 
-        // Remove o campo de senha antes de retornar
         const { password, ...safeUser } = user
         return safeUser as any
       },
     }),
-
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
@@ -46,18 +41,17 @@ const handler = NextAuth({
   },
   callbacks: {
     async session({ session, token }) {
-      if (token) {
-        if (session.user) {
-          session.user.id = token.sub
-        }
+      if (token && session.user) {
+        session.user.id = token.sub
       }
       return session
     },
   },
   secret: process.env.NEXTAUTH_SECRET,
   pages: {
-    signIn: "/login", // usa sua página de login
+    signIn: "/login",
   },
-})
+}
 
+const handler = NextAuth(authOptions)
 export { handler as GET, handler as POST }

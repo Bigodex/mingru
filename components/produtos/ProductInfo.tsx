@@ -1,13 +1,17 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
 import { ShoppingCart, Heart, Share2, Minus, Plus, Truck, RotateCcw, Shield } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/contexts/CartContext"
+import type { Product } from "../types"
 
 interface ProductInfoProps {
-  product: any
+  product: Product
+  onAddToCart?: () => void
 }
 
 function Label({ children, className }: { children: React.ReactNode; className?: string }) {
@@ -20,7 +24,9 @@ function Label({ children, className }: { children: React.ReactNode; className?:
   )
 }
 
-export function ProductInfo({ product }: ProductInfoProps) {
+export function ProductInfo({ product, onAddToCart }: ProductInfoProps) {
+  const { data: session, status } = useSession()
+  const router = useRouter()
   const { addToCart } = useCart()
   const [selectedSize, setSelectedSize] = useState("")
   const [selectedColor, setSelectedColor] = useState<{ name: string; value: string } | null>(
@@ -34,6 +40,10 @@ export function ProductInfo({ product }: ProductInfoProps) {
     : 0
 
   const handleAddToCart = () => {
+    if (status !== "authenticated") {
+      router.push("/login")
+      return
+    }
     if (product.sizes?.length && !selectedSize) {
       alert("Por favor, selecione um tamanho")
       return
@@ -50,6 +60,9 @@ export function ProductInfo({ product }: ProductInfoProps) {
       quantity,
       originalPrice: product.originalPrice,
     })
+    if (onAddToCart) {
+      onAddToCart()
+    }
   }
 
   const handleQuantityChange = (change: number) => {
@@ -88,11 +101,11 @@ export function ProductInfo({ product }: ProductInfoProps) {
       <p className="text-primary-foreground leading-relaxed text-justify">{product.description}</p>
 
       {/* Cores */}
-      {product.colors?.length > 0 && (
+      {(product.colors?.length ?? 0) > 0 && (
         <div className="space-y-2 mb-3">
           <Label>Cor: {selectedColor?.name}</Label>
           <div className="flex gap-2">
-            {product.colors.map((color: any) => (
+            {(product.colors ?? []).map((color: any) => (
               <button
                 key={color.name}
                 onClick={() => setSelectedColor(color)}
@@ -110,7 +123,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
       )}
 
       {/* Tamanhos */}
-      {product.sizes?.length > 0 && (
+      {(product.sizes && product.sizes.length > 0) && (
         <div className="space-y-2 mb-6">
           <Label>Tamanho</Label>
           <div className="grid grid-cols-4 gap-2">

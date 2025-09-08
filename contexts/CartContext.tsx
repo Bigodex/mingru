@@ -1,21 +1,27 @@
 "use client"
 
-import { createContext, useContext, useState, type ReactNode } from "react"
-import type { Product } from "@/components/types"
+import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 
-interface CartItem extends Product {
-  stockCount?: number // estoque disponível
+export interface CartItem {
+  _id: string
+  name: string
+  price: number
+  image: string
+  quantity: number
+  stockCount?: number
   size?: string
   color?: string
-  originalPrice?: number // opcional (promo)
-  quantity: number // quantidade no carrinho
+  originalPrice?: number
+  sizes?: string[]
+  colors?: { name: string; value: string }[]
 }
 
 interface CartContextProps {
   cartItems: CartItem[]
-  addToCart: (product: CartItem) => void
-  removeFromCart: (id: string | number, size?: string, color?: string) => void
-  updateQuantity: (id: string | number, newQuantity: number, size?: string, color?: string) => void
+  addToCart: (product: Omit<CartItem, "quantity"> & { quantity?: number }) => void
+  removeFromCart: (_id: string, size?: string, color?: string) => void
+  updateQuantity: (_id: string, newQuantity: number, size?: string, color?: string) => void
+  updateAttributes: (_id: string, attrs: Partial<Pick<CartItem, "size" | "color">>) => void
   clearCart: () => void
 }
 
@@ -27,66 +33,118 @@ const num = (v: unknown, fallback = 0) => {
   return Number.isFinite(n) ? n : fallback
 }
 
+const normalize = (v: string | undefined | null) => (v ?? "").toLowerCase()
+
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [cartItems, setCartItems] = useState<CartItem[]>([])
+  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("cartItems")
+      if (stored) {
+        try {
+          return JSON.parse(stored) as CartItem[]
+        } catch {
+          console.error("Erro ao ler carrinho do localStorage")
+        }
+      }
+    }
+    return []
+  })
 
-  // Adiciona item (incrementa até o limite do estoque)
-  const addToCart = (product: CartItem) => {
-    setCartItems((prev) => {
+  useEffect(() => {
+    localStorage.setItem("cartItems", JSON.stringify(cartItems))
+  }, [cartItems])
+
+  const addToCart: CartContextProps["addToCart"] = (product) => {
+    setCartItems(prev => {
       const safeStock = Math.max(0, num(product.stockCount, 0))
+      const addQty = Math.max(1, num(product.quantity ?? 1, 1))
 
-      const exists = prev.find(
-        (i) => String(i.id) === String(product.id) && i.size === product.size && i.color === product.color,
+      const idx = prev.findIndex(
+        i =>
+          String(i._id) === String(product._id) &&
+          normalize(i.size) === normalize(product.size) &&
+          normalize(i.color) === normalize(product.color)
       )
 
-      if (exists) {
-        const limit = num(exists.stockCount, safeStock) || Number.POSITIVE_INFINITY
-        return prev.map((i) =>
-          String(i.id) === String(product.id) && i.size === product.size && i.color === product.color
-            ? { ...i, quantity: Math.min(num(i.quantity, 1) + 1, limit) }
-            : i,
-        )
+      if (idx >= 0) {
+        const current = prev[idx]
+        const limit = Number.isFinite(current.stockCount ?? 0)
+          ? num(current.stockCount, 0)
+          : Number.POSITIVE_INFINITY
+        const nextQty = Math.min(num(current.quantity, 1) + addQty, limit)
+
+        const copy = prev.slice()
+        copy[idx] = { ...current, quantity: nextQty }
+        return copy
       }
 
       return [
         ...prev,
         {
-          ...product,
-          stockCount: safeStock,
-          quantity: safeStock > 0 ? 1 : 0, // só adiciona se tiver estoque
+          _id: product._id,
+          name: product.name,
+          image: product.image,
           price: num(product.price, 0),
           originalPrice: product.originalPrice != null ? num(product.originalPrice, 0) : undefined,
+          stockCount: safeStock,
+          size: product.size,
+          color: product.color,
+          sizes: product.sizes,
+          colors: product.colors,
+          quantity: safeStock > 0 ? Math.min(addQty, safeStock) : 0,
         },
       ]
     })
   }
 
-  // Remove item (pela combinação id + size + color)
-  const removeFromCart = (id: string | number, size?: string, color?: string) => {
-    setCartItems((prev) =>
-      prev.filter((i) => !(String(i.id) === String(id) && i.size === size && i.color === color)),
+  const removeFromCart: CartContextProps["removeFromCart"] = (_id, size, color) => {
+    setCartItems(prev =>
+      prev.filter(
+        i =>
+          !(
+            String(i._id) === String(_id) &&
+            normalize(i.size) === normalize(size) &&
+            normalize(i.color) === normalize(color)
+          )
+      )
     )
   }
 
-  // Atualiza quantidade (pela combinação id + size + color)
-  const updateQuantity = (id: string | number, newQuantity: number, size?: string, color?: string) => {
-    setCartItems((prev) =>
-      prev.map((i) => {
-        if (String(i.id) !== String(id) || i.size !== size || i.color !== color) return i
+  const updateQuantity: CartContextProps["updateQuantity"] = (_id, newQuantity, size, color) => {
+    setCartItems(prev =>
+      prev.map(i => {
+        if (
+          String(i._id) !== String(_id) ||
+          normalize(i.size) !== normalize(size) ||
+          normalize(i.color) !== normalize(color)
+        ) {
+          return i
+        }
+
         const limit =
-          Number.isFinite(i.stockCount) && (i.stockCount ?? 0) >= 0
+          Number.isFinite(i.stockCount ?? 0) && (i.stockCount ?? 0) >= 0
             ? num(i.stockCount, 0)
             : Number.POSITIVE_INFINITY
         const next = Math.max(1, Math.min(num(newQuantity, 1), limit))
         return { ...i, quantity: next }
-      }),
+      })
+    )
+  }
+
+  const updateAttributes: CartContextProps["updateAttributes"] = (_id, attrs) => {
+    setCartItems(prev =>
+      prev.map(i =>
+        String(i._id) === String(_id) ? { ...i, ...attrs } : i
+      )
     )
   }
 
   const clearCart = () => setCartItems([])
 
   return (
-    <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, updateQuantity, clearCart }}>
+    <CartContext.Provider
+      value={{ cartItems, addToCart, removeFromCart, updateQuantity, updateAttributes, clearCart }}
+    >
       {children}
     </CartContext.Provider>
   )

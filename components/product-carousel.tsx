@@ -2,6 +2,8 @@
 
 import { useRef } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
 import { ChevronLeft, ChevronRight, ShoppingCart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
@@ -16,6 +18,8 @@ interface ProductCarouselProps {
 export function ProductCarousel({ title, products }: ProductCarouselProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const { addToCart } = useCart()
+  const { data: session } = useSession()
+  const router = useRouter()
 
   const scrollLeft = () => {
     if (scrollRef.current) {
@@ -27,6 +31,20 @@ export function ProductCarousel({ title, products }: ProductCarouselProps) {
     if (scrollRef.current) {
       scrollRef.current.scrollBy({ left: 300, behavior: "smooth" })
     }
+  }
+
+  const handleAddToCart = (product: Product) => {
+    if (!session) {
+      router.push("/login")
+      return
+    }
+    addToCart({
+      ...product,
+      id: Number(product._id),
+      stockCount: product.stockCount ?? 10,
+      quantity: 1,
+      image: product.image || "/placeholder.svg",
+    })
   }
 
   return (
@@ -62,55 +80,47 @@ export function ProductCarousel({ title, products }: ProductCarouselProps) {
           {products.map((product) => (
             <Card
               key={product._id || product.id}
-              className="flex-shrink-2 w-64 hover:shadow-lg transition-shadow bg-muted p-0 flex flex-col"
+              className="flex-shrink-2 w-64 shadow-lg hover:shadow-lg transition-shadow bg-muted p-0 flex flex-col"
             >
               <CardContent className="p-0 flex-1 flex flex-col">
-                <Link href={`/produto/${product._id || product.id}`}>
-                  <div className="aspect-[3/5] overflow-hidden rounded-t-lg">
-                    <img
-                      src={product.image || "/placeholder.svg"}
-                      alt={product.name}
-                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 block"
-                    />
-                  </div>
-                </Link>
-
-                {/* Conteúdo centralizado e limitado */}
-                <div className="p-4 space-y-4 text-center flex-1 flex flex-col justify-between">
-                  <div>
-                    <Link href={`/produto/${product._id || product.id}`}>
-                      <h3 className="font-semibold hover:text-primary transition-colors line-clamp-2">
-                        {product.name}
-                      </h3>
-                    </Link>
-                    <p className="text-sm text-primary-foreground line-clamp-3 mt-6">
-                      {product.description}
-                    </p>
-                  </div>
-
-                  <p className="text-lg font-bold text-primary-foreground">
-                    R$ {product.price.toFixed(2).replace(".", ",")}
-                  </p>
+              <Link href={`/produto/${product._id || product.id}`}>
+                <div className="aspect-[3/5] overflow-hidden rounded-t-lg">
+                <img
+                  src={product.image || "/placeholder.svg"}
+                  alt={product.name}
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 block"
+                />
                 </div>
+              </Link>
+
+              {/* Conteúdo centralizado e limitado */}
+              <div className="p-4 space-y-4 text-center flex-1 flex flex-col justify-between">
+                <div>
+                <Link href={`/produto/${product._id || product.id}`}>
+                  <h3 className="font-semibold hover:text-primary transition-colors line-clamp-2">
+                  {product.name}
+                  </h3>
+                </Link>
+                <p className="text-sm text-primary-foreground line-clamp-3 mt-6">
+                  {product.description}
+                </p>
+                </div>
+
+                <p className="text-lg font-bold text-primary-foreground">
+                R$ {product.price.toFixed(2).replace(".", ",")}
+                </p>
+              </div>
               </CardContent>
 
               {/* Botão sempre no rodapé */}
               <CardFooter className="p-4 pt-0">
-                <Button
-                  className="w-full justify-center bg-primary/70 border"
-                  onClick={() =>
-                    addToCart({
-                      ...product,
-                      id: Number(product._id), // força para number
-                      stockCount: product.stockCount ?? 10,
-                      quantity: 1,
-                      image: product.image || "/placeholder.svg", // ensure image is always a string
-                    })
-                  }
-                >
-                  <ShoppingCart className="h-4 w-4 mr-2" />
-                  Adicionar ao Carrinho
-                </Button>
+              <Button
+                className="w-full justify-center bg-primary/70 border"
+                onClick={() => handleAddToCart(product)}
+              >
+                <ShoppingCart className="h-4 w-4 mr-2" />
+                Adicionar ao Carrinho
+              </Button>
               </CardFooter>
             </Card>
           ))}
@@ -156,16 +166,7 @@ export function ProductCarousel({ title, products }: ProductCarouselProps) {
             <CardFooter className="p-3 pt-0">
               <Button
                 className="w-full justify-center bg-primary/70 border"
-                onClick={() =>
-                  addToCart({
-                    ...product,
-                    id: Number(product._id), // força para number
-                    stockCount: product.stockCount ?? 10,
-                    quantity: 1,
-                    image: product.image || "/placeholder.svg", // ensure image is always a string
-                  })
-                }
-                
+                onClick={() => handleAddToCart(product)}
               >
                 <ShoppingCart className="h-4 w-4 mr-2" />
                 +Adicionar

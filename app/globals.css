@@ -21,8 +21,8 @@
   --accent-foreground: #343434; /* Dark gray text on accent */
   --destructive: #d9534f;
   --destructive-foreground: #ffffff;
-  --border: #555; /* Light gray borders */
-  --input: #ffffff; /* White input background */
+  --border: transparent; /* Light gray borders */
+  --input: #ffffff; /* Transparent input background */ /* No border for inputs */
   --ring: #ffbd09; /* Mustard yellow focus ring */
   --chart-1: #ffbd09;
   --chart-2: #5d8aff;

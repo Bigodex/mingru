@@ -19,3 +19,13 @@ export interface Product {
   features?: string[]
   specifications?: Record<string, string>
 }
+
+export interface CartItem extends Product {
+  name?: string
+  description?: string
+  stockCount?: number    // estoque disponível (override same name)
+  size?: string          // opcional: selecionado
+  color?: string         // opcional: selecionado
+  originalPrice?: number // opcional (promo)
+  quantity: number       // quantidade no carrinho
+}

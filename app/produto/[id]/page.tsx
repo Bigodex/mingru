@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { ProductCarousel } from "@/components/product-carousel"
@@ -79,6 +80,35 @@ export default function ProductPage({ params }: { params: { id: string | number 
   const { id } = params
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
+  const [isLoggedIn, setIsLoggedIn] = useState(false) // Novo estado para verificar login
+  const router = useRouter()
+
+  useEffect(() => {
+    // Verificar se o token está presente no localStorage
+    const token = localStorage.getItem("token")
+    setIsLoggedIn(!!token)
+  }, [])
+
+  const handleAddToCart = async () => {
+    if (!isLoggedIn) {
+      router.push("/login") // Redireciona para a tela de login se o usuário não estiver logado
+      return
+    }
+    try {
+      await fetch("/api/cart", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`, // Token do usuário logado
+        },
+        body: JSON.stringify({ productId: product?._id, quantity: 1 }), // Usando _id como identificador do produto
+      })
+      // Se quiser atualizar o estado do carrinho na UI imediatamente:
+      // addToCart({ ...product, quantity: 1 })
+    } catch (err) {
+      console.error(err) // Log de erro para depuração
+    }
+  }
 
   // Buscar produto do banco
   useEffect(() => {
@@ -127,7 +157,7 @@ export default function ProductPage({ params }: { params: { id: string | number 
         {/* Grid principal */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-8">
           <ProductImageGallery images={product.images} name={product.name} />
-          <ProductInfo product={product} />
+          <ProductInfo product={product} onAddToCart={handleAddToCart} />
         </div>
 
         {/* Abas com detalhes, especificações e reviews */}
@@ -135,7 +165,7 @@ export default function ProductPage({ params }: { params: { id: string | number 
 
         {/* Produtos relacionados */}
         <div className="mt-12">
-          <ProductCarousel title="Produtos Relacionados" products={relatedProducts} />
+          <ProductCarousel title="Camisetas Relacionadas" products={relatedProducts} />
         </div>
       </main>
 

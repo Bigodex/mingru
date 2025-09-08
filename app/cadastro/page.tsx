@@ -1,9 +1,10 @@
 "use client"
 
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
 import type React from "react"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Eye, EyeOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -15,6 +16,10 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 
 export default function CadastroPage() {
+  const router = useRouter()
+  const { data: session, status } = useSession()
+
+  // Hoist hooks before any early return
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [formData, setFormData] = useState({
@@ -25,7 +30,16 @@ export default function CadastroPage() {
     acceptTerms: false,
     acceptNewsletter: false,
   })
-  const router = useRouter()
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.replace("/access-denied")
+    }
+  }, [status, router])
+
+  if (status === "loading") {
+    return null  // or a spinner
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

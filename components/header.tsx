@@ -80,7 +80,7 @@ export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
+    <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-primary/80 border-b border-border ">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
@@ -144,7 +144,7 @@ export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
               <Input
                 type="search"
                 placeholder="Buscar produtos..."
-                className="pl-10 border border-border bg-muted/50"
+                className="pl-10 border border-border bg-white/80 focus-visible:bg-white/80 focus-visible:rouded-md"
               />
             </div>
           </div>
@@ -152,12 +152,12 @@ export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
           {/* Action Buttons */}
           <div className="flex items-center space-x-4">
             {/* Shopping Cart */}
-            <div className="relative">
+            <div className="relative group">
               <Button
                 variant="ghost"
                 size="icon"
                 asChild
-                className="hover:border hover:border-border"
+                className="hover:border hover:border-border hover:bg-white/80"
               >
                 <Link href="/carrinho">
                   <ShoppingCart className="h-5 w-5" />
@@ -166,7 +166,7 @@ export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
 
               {totalQuantity > 0 && (
                 <span
-                  className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center border border-border"
+                  className="absolute -top-1 -right-1 bg-white/80 text-primary-foreground text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center border border-border group-hover:bg-primary-foreground group-hover:text-white"
                 >
                   {totalQuantity}
                 </span>
@@ -182,12 +182,12 @@ export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
                     alt="Avatar"
                     width={36}
                     height={36}
-                    className="rounded-full cursor-pointer border-2"
+                    className="rounded-full cursor-pointer"
                     style={{ borderColor: "#666" }}
                     onClick={onAvatarClick}
                   />
                   <span className="text-sm font-medium">
-                    Olá, {session.user?.name}!
+                    Olá, {session.user?.name?.split(" ")[0]}!
                   </span>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -205,11 +205,11 @@ export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
                   variant="outline"
                   size="sm"
                   asChild
-                  className="hidden md:flex bg-transparent"
+                  className="hidden md:flex bg-transparent bg-white/80"
                 >
                   <Link href="/login">Entrar</Link>
                 </Button>
-                <Button size="sm" asChild className="hidden md:flex border border-border">
+                <Button size="sm" asChild className="hidden md:flex border border-border bg-white/80">
                   <Link href="/cadastro">Cadastrar</Link>
                 </Button>
               </>
