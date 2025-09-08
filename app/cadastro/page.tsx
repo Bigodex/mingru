@@ -3,6 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Eye, EyeOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -24,6 +25,7 @@ export default function CadastroPage() {
     acceptTerms: false,
     acceptNewsletter: false,
   })
+  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -51,8 +53,7 @@ export default function CadastroPage() {
         return
       }
 
-      alert("Conta criada com sucesso!")
-      console.log("Usuário cadastrado:", data)
+      router.push("/cadastro/sucesso")
     } catch (err) {
       console.error(err)
       alert("Erro de conexão com o servidor")

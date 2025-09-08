@@ -1,14 +1,7 @@
 "use client"
 
 import { createContext, useContext, useState, type ReactNode } from "react"
-
-interface Product {
-  id: number
-  name: string
-  description: string
-  price: number // mantenha number no banco/JSON (use ponto, ex: 179.90)
-  image: string
-}
+import type { Product } from "@/components/types"
 
 interface CartItem extends Product {
   stockCount?: number // estoque disponível
@@ -21,8 +14,8 @@ interface CartItem extends Product {
 interface CartContextProps {
   cartItems: CartItem[]
   addToCart: (product: CartItem) => void
-  removeFromCart: (id: number, size?: string, color?: string) => void
-  updateQuantity: (id: number, newQuantity: number, size?: string, color?: string) => void
+  removeFromCart: (id: string | number, size?: string, color?: string) => void
+  updateQuantity: (id: string | number, newQuantity: number, size?: string, color?: string) => void
   clearCart: () => void
 }
 
@@ -43,13 +36,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const safeStock = Math.max(0, num(product.stockCount, 0))
 
       const exists = prev.find(
-        (i) => i.id === product.id && i.size === product.size && i.color === product.color,
+        (i) => String(i.id) === String(product.id) && i.size === product.size && i.color === product.color,
       )
 
       if (exists) {
         const limit = num(exists.stockCount, safeStock) || Number.POSITIVE_INFINITY
         return prev.map((i) =>
-          i.id === product.id && i.size === product.size && i.color === product.color
+          String(i.id) === String(product.id) && i.size === product.size && i.color === product.color
             ? { ...i, quantity: Math.min(num(i.quantity, 1) + 1, limit) }
             : i,
         )
@@ -69,15 +62,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }
 
   // Remove item (pela combinação id + size + color)
-  const removeFromCart = (id: number, size?: string, color?: string) => {
-    setCartItems((prev) => prev.filter((i) => !(i.id === id && i.size === size && i.color === color)))
+  const removeFromCart = (id: string | number, size?: string, color?: string) => {
+    setCartItems((prev) =>
+      prev.filter((i) => !(String(i.id) === String(id) && i.size === size && i.color === color)),
+    )
   }
 
   // Atualiza quantidade (pela combinação id + size + color)
-  const updateQuantity = (id: number, newQuantity: number, size?: string, color?: string) => {
+  const updateQuantity = (id: string | number, newQuantity: number, size?: string, color?: string) => {
     setCartItems((prev) =>
       prev.map((i) => {
-        if (i.id !== id || i.size !== size || i.color !== color) return i
+        if (String(i.id) !== String(id) || i.size !== size || i.color !== color) return i
         const limit =
           Number.isFinite(i.stockCount) && (i.stockCount ?? 0) >= 0
             ? num(i.stockCount, 0)

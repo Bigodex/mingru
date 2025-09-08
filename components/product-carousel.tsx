@@ -101,8 +101,10 @@ export function ProductCarousel({ title, products }: ProductCarouselProps) {
                   onClick={() =>
                     addToCart({
                       ...product,
-                      stockCount: product.stockCount ?? 10, // usa se vier do JSON/DB
-                      quantity: 1 // inicializa sempre em 1
+                      id: Number(product._id), // força para number
+                      stockCount: product.stockCount ?? 10,
+                      quantity: 1,
+                      image: product.image || "/placeholder.svg", // ensure image is always a string
                     })
                   }
                 >
@@ -157,10 +159,13 @@ export function ProductCarousel({ title, products }: ProductCarouselProps) {
                 onClick={() =>
                   addToCart({
                     ...product,
+                    id: Number(product._id), // força para number
                     stockCount: product.stockCount ?? 10,
-                    quantity: 1
+                    quantity: 1,
+                    image: product.image || "/placeholder.svg", // ensure image is always a string
                   })
                 }
+                
               >
                 <ShoppingCart className="h-4 w-4 mr-2" />
                 +Adicionar

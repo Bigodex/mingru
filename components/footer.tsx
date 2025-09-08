@@ -9,16 +9,16 @@ export function Footer() {
           {/* Brand */}
           <div className="space-y-6">
             <div className="flex items-center space-x-4">
-              <img src="/logo-oficial.svg" alt="Mingru Logo" className="h-18 w-18" />
+              <img src="/Branding/logo-oficial.svg" alt="Mingru Logo" className="h-18 w-18" />
               <div className="text-3xl font-bold text-primary-foreground">Mingru</div>
             </div>
             <p className="text-sm text-foreground leading-relaxed">
               Mingru nasce do conceito de migrar — evoluir, transformar e se reinventar. Um streetwear único, com qualidade premium, personalidade marcante e atitude que atravessa gerações.
             </p>
             <div className="flex space-x-6">
-              <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
+                <Link href="https://www.instagram.com/mingrubr/" className="text-muted-foreground hover:text-primary transition-colors" target="_blank" rel="noopener noreferrer">
                 <Instagram className="h-6 w-6" />
-              </Link>
+                </Link>
               <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
                 <Facebook className="h-6 w-6" />
               </Link>

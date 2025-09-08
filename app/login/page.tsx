@@ -19,6 +19,8 @@ import {
 } from "@/components/ui/card"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
+import { FcGoogle } from "react-icons/fc"
+import { GoogleAuthButton } from "@/components/googleAuthButton"
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -118,15 +120,18 @@ export default function LoginPage() {
               <div className="flex items-center justify-between">
                 <Link
                   href="/esqueci-senha"
-                  className="text-sm text-primary hover:underline"
+                  className="text-sm text-primary-foreground hover:underline"
                 >
                   Esqueci minha senha
                 </Link>
               </div>
 
-              <Button type="submit" className="w-full border">
+              <Button type="submit" className="w-full border mb-3">
                 Entrar
               </Button>
+
+              { /* Botão Google */ }
+              <GoogleAuthButton />  
             </form>
           </CardContent>
 
