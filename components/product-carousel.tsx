@@ -40,7 +40,7 @@ export function ProductCarousel({ title, products }: ProductCarouselProps) {
     }
     addToCart({
       ...product,
-      id: Number(product._id),
+      _id: String(product._id),
       stockCount: product.stockCount ?? 10,
       quantity: 1,
       image: product.image || "/placeholder.svg",
@@ -54,10 +54,10 @@ export function ProductCarousel({ title, products }: ProductCarouselProps) {
         <div className="flex items-center justify-between">
           <h2 className="text-2xl md:text-3xl font-bold">{title}</h2>
           <div className="flex space-x-2">
-            <Button variant="outline" size="icon" onClick={scrollLeft}>
+            <Button variant="outline" size="icon" onClick={scrollLeft} className="bg-white shadow-lg">
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <Button variant="outline" size="icon" onClick={scrollRight}>
+            <Button variant="outline" size="icon" onClick={scrollRight} className="bg-white shadow-lg">
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>

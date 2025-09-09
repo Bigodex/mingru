@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCart } from "@/contexts/CartContext";
 import Link from "next/link";
 import Image from "next/image";
 import { useSession, signOut } from "next-auth/react";
-import { Search, ShoppingCart, Menu, X, ChevronDown, Home } from "lucide-react";
+import { Search, ShoppingCart, Menu, X, ChevronDown, Home, Scissors, ShoppingBag as Bag, Gift, Shirt } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -23,14 +23,21 @@ interface HeaderProps {
 export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
   const { cartItems = [] } = useCart();
   const totalQuantity = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const { data: session } = useSession();
 
   const navItems = [
     {
       name: "Camisetas",
+      icon: Shirt,
       href: "/categoria/Camisetas",
       submenu: [
         { name: "Oversized", href: "/categoria/Camisetas/Oversized" },
@@ -43,6 +50,7 @@ export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
     },
     {
       name: "Calças",
+      icon: Scissors,
       href: "/categoria/Calcas/calcas",
       submenu: [
         { name: "Cargo", href: "/categoria/masculino/Calças/cargo" },
@@ -55,6 +63,7 @@ export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
     },
     {
       name: "Calçados",
+      icon: Bag,
       href: "/categoria/calcados",
       submenu: [
         { name: "Sneakers", href: "/categoria/calcados/sneakers" },
@@ -67,6 +76,7 @@ export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
     },
     {
       name: "Acessórios",
+      icon: Gift,
       href: "/categoria/acessorios",
       submenu: [
         { name: "Bonés", href: "/categoria/acessorios/bones" },
@@ -88,54 +98,56 @@ export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
             <div className="flex items-center group relative">
               <Home className="h-6 w-6 text-primary-foreground absolute opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
               <Image
-                src="/Branding/logo-texto.svg"
-                alt="Mingru"
-                width={120}
-                height={32}
-                className="object-contain transition-transform duration-200 transform translate-x-0 group-hover:translate-x-7"
+              src="/Branding/logo-oficial.svg"
+              alt="Mingru"
+              width={60}
+              height={60}
+              className="object-cover transition-transform duration-200 transform translate-x-0 group-hover:translate-x-7 bg-primary-foreground/90 rounded-full mt-0"
               />
             </div>
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8 ml-8">
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex items-center space-x-8 ml-8">
             {navItems.map((item) => (
               <div key={item.name}>
-                {item.submenu ? (
-                  <DropdownMenu
-                    onOpenChange={(open) => setOpenDropdown(open ? item.name : null)}
-                  >
-                    <DropdownMenuTrigger className="flex items-center space-x-1 text-sm font-medium hover:text-primary transition-colors">
-                      <span>{item.name}</span>
-                      <ChevronDown
-                        className={`h-4 w-4 transition-transform ${
-                          openDropdown === item.name ? "rotate-0" : "rotate-180"
-                        }`}
-                      />
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="text-center">
-                      {item.submenu.map((subItem) => (
-                        <DropdownMenuItem
-                          key={subItem.name}
-                          asChild
-                          className="justify-center"
-                        >
-                          <Link href={subItem.href}>{subItem.name}</Link>
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                ) : (
-                  <button
-                    onClick={() => onCategoryClick(item.name.toLowerCase())}
-                    className="text-sm font-medium hover:text-primary transition-colors"
-                  >
-                    {item.name}
-                  </button>
-                )}
+              {item.submenu ? (
+              <DropdownMenu
+              onOpenChange={(open) => setOpenDropdown(open ? item.name : null)}
+              >
+              <DropdownMenuTrigger className="flex items-center space-x-1 text-sm font-medium hover:text-primary-foreground/80 transition-colors relative group">
+                <span>{item.name}</span>
+                <ChevronDown
+                className={`h-4 w-4 transition-transform ${
+                openDropdown === item.name ? "rotate-0" : "rotate-180"
+                }`}
+                />
+                <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary-foreground transition-all duration-300 group-hover:w-full rounded-lg mt-3"></span>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="text-center">
+                {item.submenu.map((subItem) => (
+                <DropdownMenuItem
+                key={subItem.name}
+                asChild
+                className="justify-center"
+                >
+                <Link href={subItem.href}>{subItem.name}</Link>
+                </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+              </DropdownMenu>
+              ) : (
+              <button
+              onClick={() => onCategoryClick(item.name.toLowerCase())}
+              className="flex items-center text-sm font-medium hover:text-primary transition-colors relative group"
+              >
+              {item.name}
+              <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full"></span>
+              </button>
+              )}
               </div>
             ))}
-          </nav>
+            </nav>
 
           {/* Search Bar */}
           <div className="hidden md:flex items-center space-x-4 flex-1 max-w-md mx-8">
@@ -152,7 +164,7 @@ export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
           {/* Action Buttons */}
           <div className="flex items-center space-x-4">
             {/* Shopping Cart */}
-            <div className="relative group">
+            <div className="relative group mr-4">
               <Button
                 variant="ghost"
                 size="icon"
@@ -160,13 +172,14 @@ export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
                 className="hover:border hover:border-border hover:bg-white/80"
               >
                 <Link href="/carrinho">
-                  <ShoppingCart className="h-5 w-5" />
+                  <ShoppingCart className="h-8 w-8" />
                 </Link>
               </Button>
 
-              {totalQuantity > 0 && (
+              {mounted && totalQuantity > 0 && (
                 <span
                   className="absolute -top-1 -right-1 bg-white/80 text-primary-foreground text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center border border-border group-hover:bg-primary-foreground group-hover:text-white"
+                  aria-label={`Itens no carrinho: ${totalQuantity}`}
                 >
                   {totalQuantity}
                 </span>
@@ -205,7 +218,7 @@ export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
                   variant="outline"
                   size="sm"
                   asChild
-                  className="hidden md:flex bg-transparent bg-white/80"
+                  className="hidden md:flex bg-primary/0 hover:bg-white/100"
                 >
                   <Link href="/login">Entrar</Link>
                 </Button>
@@ -250,8 +263,9 @@ export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
                         onCategoryClick(item.name.toLowerCase());
                         setIsMenuOpen(false);
                       }}
-                      className="block py-2 text-sm font-medium hover:text-primary transition-colors"
+                      className="flex items-center py-2 text-sm font-medium hover:text-primary transition-colors"
                     >
+                      <item.icon className="mr-1 h-4 w-4" />
                       {item.name}
                     </button>
                     {item.submenu && (
