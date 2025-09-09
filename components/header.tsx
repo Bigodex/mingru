@@ -23,6 +23,7 @@ interface HeaderProps {
 export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [mobileOpenCategory, setMobileOpenCategory] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
 
   const { cartItems = [] } = useCart();
@@ -100,8 +101,8 @@ export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
               <Image
               src="/Branding/logo-oficial.svg"
               alt="Mingru"
-              width={60}
-              height={60}
+              width={50}
+              height={50}
               className="object-cover transition-transform duration-200 transform translate-x-0 group-hover:translate-x-7 bg-primary-foreground/90 rounded-full mt-0"
               />
             </div>
@@ -235,7 +236,7 @@ export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
               className="md:hidden"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
-              {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              {isMenuOpen ? <X className="h-20 w-20" /> : <Menu className="h-20 w-20" />}
             </Button>
           </div>
         </div>
@@ -254,28 +255,44 @@ export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
                 />
               </div>
 
-              {/* Mobile Navigation */}
+              {/* Mobile Navigation as Accordions */}
               <nav className="flex flex-col space-y-2">
                 {navItems.map((item) => (
                   <div key={item.name}>
                     <button
-                      onClick={() => {
-                        onCategoryClick(item.name.toLowerCase());
-                        setIsMenuOpen(false);
-                      }}
-                      className="flex items-center py-2 text-sm font-medium hover:text-primary transition-colors"
+                      onClick={() =>
+                        setMobileOpenCategory(
+                          mobileOpenCategory === item.name ? null : item.name
+                        )
+                      }
+                      className="flex items-center justify-between py-2 text-sm font-medium hover:text-primary transition-colors"
                     >
-                      <item.icon className="mr-1 h-4 w-4" />
-                      {item.name}
+                      <span className="flex items-center">
+                        <item.icon className="mr-1 h-4 w-4" />
+                        {item.name}
+                      </span>
+                      {item.submenu && (
+                        <ChevronDown
+                          className={`h-4 w-4 transform transition-transform ${
+                            mobileOpenCategory === item.name
+                              ? "rotate-0"
+                              : "-rotate-90"
+                          }`}
+                        />
+                      )}
                     </button>
-                    {item.submenu && (
-                      <div className="grid grid-cols-3 gap-4 mt-2">
+
+                    {item.submenu && mobileOpenCategory === item.name && (
+                      <div className="grid grid-cols-3 gap-4 mt-2 bg-white/80 p-3 rounded-lg">
                         {item.submenu.map((subItem) => (
                           <Link
                             key={subItem.name}
                             href={subItem.href}
-                            className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                            onClick={() => setIsMenuOpen(false)}
+                            className="text-sm text-primary-foreground hover:text-primary transition-colors"
+                            onClick={() => {
+                              setIsMenuOpen(false);
+                              setMobileOpenCategory(null);
+                            }}
                           >
                             {subItem.name}
                           </Link>
@@ -303,7 +320,7 @@ export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
             {session && (
               <div className="flex items-center justify-center mt-4 space-x-2">
                 <Image
-                  src="/logo-oficial.svg"
+                  src="Branding/logo-oficial.svg"
                   alt="Mingru Logo"
                   width={36}
                   height={36}

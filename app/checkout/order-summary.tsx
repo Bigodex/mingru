@@ -1,8 +1,31 @@
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
-import { Lock } from "lucide-react"
+"use client";
+import React, { useState, useEffect } from "react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Lock } from "lucide-react";
 
-export default function OrderSummary({ cartItems, subtotal, shippingCost, total, paymentMethod }: any) {
+export default function OrderSummary() {
+  // estados dinâmicos
+  const [cartItems, setCartItems] = useState<any[]>([]);
+  const [paymentMethod, setPaymentMethod] = useState<string>("");
+
+  useEffect(() => {
+    const storedCart = localStorage.getItem("cartItems");
+    if (storedCart) setCartItems(JSON.parse(storedCart));
+    const storedPM = localStorage.getItem("paymentMethod");
+    if (storedPM) setPaymentMethod(storedPM);
+  }, []);
+
+  // cálculos
+  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const shippingCost = subtotal >= 150 ? 0 : 15.9;
+  const discount = paymentMethod === "pix" ? subtotal * 0.05 : 0;
+  const total = subtotal + shippingCost - discount;
+
+  if (!cartItems.length) {
+    return <div className="p-4 text-center">Nenhum produto no carrinho.</div>;
+  }
+
   return (
     <div className="space-y-6">
       <Card>
@@ -40,12 +63,16 @@ export default function OrderSummary({ cartItems, subtotal, shippingCost, total,
             </div>
             <div className="flex justify-between text-sm">
               <span>Frete</span>
-              <span>{shippingCost === 0 ? "Grátis" : `R$ ${shippingCost.toFixed(2).replace(".", ",")}`}</span>
+              <span>
+                {shippingCost === 0
+                  ? "Grátis"
+                  : `R$ ${shippingCost.toFixed(2).replace(".", ",")}`}
+              </span>
             </div>
             {paymentMethod === "pix" && (
               <div className="flex justify-between text-sm text-green-600">
                 <span>Desconto PIX (5%)</span>
-                <span>-R$ {(subtotal * 0.05).toFixed(2).replace(".", ",")}</span>
+                <span>-R$ {discount.toFixed(2).replace(".", ",")}</span>
               </div>
             )}
           </div>
@@ -55,10 +82,7 @@ export default function OrderSummary({ cartItems, subtotal, shippingCost, total,
           <div className="flex justify-between font-semibold text-lg">
             <span>Total</span>
             <span className="text-primary">
-              R${" "}
-              {paymentMethod === "pix"
-                ? (total - subtotal * 0.05).toFixed(2).replace(".", ",")
-                : total.toFixed(2).replace(".", ",")}
+              R$ {total.toFixed(2).replace(".", ",")}
             </span>
           </div>
         </CardContent>
@@ -78,5 +102,5 @@ export default function OrderSummary({ cartItems, subtotal, shippingCost, total,
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

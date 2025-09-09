@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Pencil, User, MapPin, CreditCard } from "lucide-react";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
+import CreditCardPreview from "@/components/payment/CreditCardPreview";
+
 
 type Personal = {
   avatarUrl: string | null;
@@ -80,12 +82,16 @@ export default function PerfilPage() {
   const [editDelivery, setEditDelivery] = useState(false);
   const [editPayment, setEditPayment] = useState(false);
 
+  // ====== NOVO: refs para controle do input de arquivo e última URL criada
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const lastObjectUrlRef = useRef<string | null>(null);
+
   // Preenche com sessão (só email agora)
   useEffect(() => {
     if (session?.user) {
       setPersonal((p) => ({
         ...p,
-        email: session.user.email ?? p.email,
+        email: session?.user?.email ?? p.email,
       }));
     }
   }, [session]);
@@ -104,11 +110,27 @@ export default function PerfilPage() {
     fetchProfile();
   }, []);
 
-  // Upload avatar
+  // Upload avatar (preview local)
   const handleFile = (file: File | null) => {
     if (!file) return;
+
+    // Libera URL anterior para evitar vazamento de memória
+    if (lastObjectUrlRef.current) {
+      URL.revokeObjectURL(lastObjectUrlRef.current);
+      lastObjectUrlRef.current = null;
+    }
+
     const url = URL.createObjectURL(file);
+    lastObjectUrlRef.current = url;
     setPersonal((p) => ({ ...p, avatarUrl: url }));
+
+    // Permite selecionar o mesmo arquivo novamente se quiser
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  // Abre seletor de arquivos ao clicar no botão
+  const openFileDialog = () => {
+    fileInputRef.current?.click();
   };
 
   // Save handlers
@@ -163,15 +185,15 @@ export default function PerfilPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
-      <Header 
-        onCategoryClick={() => console.log("Category clicked")} 
-        onAvatarClick={() => console.log("Avatar clicked")} 
+      <Header
+        onCategoryClick={() => console.log("Category clicked")}
+        onAvatarClick={() => console.log("Avatar clicked")}
       />
 
       <main className="flex-1 container mx-auto px-4 py-10">
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 ">
           {/* --------- CARD ESQUERDA – INFORMAÇÕES PESSOAIS --------- */}
-          <Card className="h-full flex flex-col">
+          <Card className="h-full flex flex-col border-primary-foreground/20">
             <CardHeader className="flex justify-between items-center">
               <CardTitle className="flex items-center flex-1 text-center">
                 <User className="mr-2 h-5 w-5" />
@@ -194,19 +216,21 @@ export default function PerfilPage() {
                     className="h-full w-full object-cover"
                   />
                 </div>
+
+                {/* ====== NOVO: input oculto + botão que abre o seletor ====== */}
                 {editPersonal && (
-                  <label className="inline-block">
-                    <span className="sr-only">Escolher foto</span>
+                  <>
                     <input
+                      ref={fileInputRef}
                       type="file"
                       accept="image/*"
                       className="hidden"
                       onChange={(e) => handleFile(e.target.files?.[0] ?? null)}
                     />
-                    <Button variant="outline" type="button">
+                    <Button variant="outline" type="button" onClick={openFileDialog}>
                       Trocar foto
                     </Button>
-                  </label>
+                  </>
                 )}
               </div>
 
@@ -298,7 +322,7 @@ export default function PerfilPage() {
           </Card>
 
           {/* --------- CARD CENTRO – INFORMAÇÕES DE ENTREGA --------- */}
-          <Card className="h-full flex flex-col">
+          <Card className="h-full flex flex-col border-primary-foreground/20">
             <CardHeader className="flex justify-between items-center">
               <CardTitle className="flex items-center flex-1 text-center">
                 <MapPin className="mr-2 h-5 w-5" />
@@ -365,51 +389,45 @@ export default function PerfilPage() {
           </Card>
 
           {/* --------- CARD DIREITA – INFORMAÇÕES DE PAGAMENTO --------- */}
-          <Card className="h-full flex flex-col">
+            <Card className="h-full flex flex-col border-primary-foreground/20">
             <CardHeader className="flex justify-between items-center">
               <CardTitle className="flex items-center flex-1 text-center">
-                <CreditCard className="mr-2 h-5 w-5" />
-                Informações de Pagamento
+              <CreditCard className="mr-2 h-5 w-5" />
+              Informações de Pagamento
               </CardTitle>
               <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setEditPayment((prev) => !prev)}
+              variant="ghost"
+              size="icon"
+              onClick={() => setEditPayment((prev) => !prev)}
               >
-                <Pencil className="h-5 w-5" />
+              <Pencil className="h-5 w-5" />
               </Button>
             </CardHeader>
+
             <CardContent className="space-y-5 flex-1 flex flex-col">
-              <div className="h-40 w-full rounded-md bg-muted/50 border flex items-center justify-center text-sm text-muted-foreground">
-                Widget do cartão aqui (placeholder)
+              {/* >>> Substitui o placeholder por este bloco <<< */}
+              <div className="w-full flex items-center justify-center">
+              <CreditCardPreview
+                number={payment.cardNumber}
+                name={payment.cardHolder}
+                expiry={payment.cardExpiry}
+                cvv={payment.cardCvv}
+              />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="cardHolder">Nome impresso no cartão</Label>
-                <Input
-                  id="cardHolder"
-                  className="border border-border"
-                  value={payment.cardHolder}
-                  readOnly={!editPayment}
-                  onChange={(e) =>
-                    setPayment({ ...payment, cardHolder: e.target.value })
-                  }
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="cpf">CPF</Label>
-                <Input
-                  id="cpf"
-                  className="border border-border"
-                  inputMode="numeric"
-                  placeholder="000.000.000-00"
-                  value={payment.cpf}
-                  readOnly={!editPayment}
-                  onChange={(e) =>
-                    setPayment({ ...payment, cpf: e.target.value })
-                  }
-                />
+              <Label htmlFor="cpf">CPF</Label>
+              <Input
+                id="cpf"
+                className="border border-border"
+                inputMode="numeric"
+                placeholder="000.000.000-00"
+                value={payment.cpf}
+                readOnly={!editPayment}
+                onChange={(e) =>
+                setPayment({ ...payment, cpf: e.target.value })
+                }
+              />
               </div>
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

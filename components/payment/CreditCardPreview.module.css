@@ -1,0 +1,183 @@
+/* Cartão de crédito com flip no hover (escopo local via CSS Module) */
+.root {
+  display: inline-block;
+}
+
+.flipCard {
+  background-color: transparent;
+  width: 310px;           /* ajuste fino de largura */
+  height: 176px;          /* proporção ~1.59 */
+  perspective: 1000px;
+  color: #ffbd09;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue",
+    Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+}
+
+.inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  text-align: left;
+  transition: transform 0.8s ease;
+  transform-style: preserve-3d;
+
+}
+
+.flipCard:hover .inner {
+  transform: rotateY(180deg);
+  top: 0;
+}
+
+/* Faces */
+.face {
+  box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 2px,
+              rgba(0, 0, 0, 0.3) 0px 7px 13px -3px,
+              rgba(0, 0, 0, 0.2) 0px -1px 0px inset;
+  position: absolute;
+  /* display: inline-block; */
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 14px;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  overflow: hidden;
+}
+
+/* Frente */
+.front {
+  background: #444 radial-gradient(110% 60% at 100% 0%, rgba(255,255,255,0.08), transparent 40%);
+  position: relative;
+}
+
+/* Verso */
+.back {
+  background: #3a3a3a;
+  transform: rotateY(180deg);
+  position: absolute;
+  z-index: 10;
+  margin-top: -176px;
+}
+
+/* Elementos da frente */
+.brand {
+  position: absolute;
+  top: 12px;
+  left: 16px;
+  font-size: 12px;
+  letter-spacing: .2em;
+  opacity: 0.9;
+}
+
+.logo {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.chip {
+  position: absolute;
+  top: 48px;
+  left: 18px;
+}
+
+.contactless {
+  position: absolute;
+  top: 52px;
+  right: 18px;
+  opacity: .85;
+}
+
+.number {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  top: 94px;
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: .06em;
+}
+
+.validWrap {
+  position: absolute;
+  left: 18px;
+  top: 124px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.validLabel {
+  font-size: 10px;
+  font-weight: 700;
+  opacity: .8;
+}
+
+.expiry {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.holder {
+  position: absolute;
+  left: 18px;
+  bottom: 14px;
+  right: 18px;
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Verso: tarjas e CVV */
+.strip {
+  position: absolute;
+  top: 18px;
+  left: 0;
+  right: 0;
+  height: 28px;
+  background: repeating-linear-gradient(45deg, #ffbd09, #ffbd09 10px, #202020 10px, #202020 20px);
+}
+
+.midStrip {
+  position: absolute;
+  top: 64px;
+  left: 14px;
+  width: 210px;
+  height: 18px;
+  background: #fff;
+  border-radius: 3px;
+}
+
+.cvvBox {
+  position: absolute;
+  top: 64px;
+  right: 14px;
+  width: 70px;
+  height: 18px;
+  background: #fff;
+  border-radius: 3px;
+  display: grid;
+  place-items: center;
+}
+
+.cvv {
+  color: #000;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+/* Utilitários */
+.mono {
+  font-variant-numeric: tabular-nums;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+}
+
+

@@ -38,9 +38,9 @@ export default function CheckoutSuccess({ total }: { total: number }) {
           <Button asChild>
             <Link href="/">Continuar Comprando</Link>
           </Button>
-          <Button variant="outline" asChild>
+            <Button variant="outline" className="bg-white shadow-sm" asChild>
             <Link href="/meus-pedidos">Ver Meus Pedidos</Link>
-          </Button>
+            </Button>
         </div>
       </div>
     </main>

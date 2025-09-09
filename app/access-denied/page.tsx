@@ -31,10 +31,10 @@ export default function AccessDeniedPage() {
             <AlertCircle className="w-8 h-8" />
           </div>
           <CardTitle className="text-xl font-semibold text-center text-foreground">
-            Acesso negado
+            Você já está logado!
           </CardTitle>
           <CardDescription className="text-center text-muted-foreground">
-            Você já está logado. Aguarde um instante, você será redirecionado automaticamente.
+            Aguarde um instante, você será redirecionado automaticamente.
           </CardDescription>
         </CardHeader>
 

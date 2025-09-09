@@ -226,7 +226,7 @@ export default function CartList({ cartItems }: { cartItems: CartItem[] }) {
       })}
 
       <div className="pt-1">
-        <Button variant="outline" asChild className="w-full sm:w-auto">
+        <Button variant="outline" asChild className="w-full sm:w-auto hover:bg-primary hover:border-none bg-white text-black shadow-md">
           <Link href="/">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Continuar Comprando

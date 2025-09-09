@@ -1,44 +1,85 @@
 "use client";
+
 import { useEffect, useState } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import type { Dispatch, SetStateAction } from "react";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { User, Edit } from "lucide-react";
 
+/* ========= Tipos simples para organizar ========= */
+type CustomerInfo = {
+  firstName?: string;
+  lastName?: string;
+  cpf?: string;
+  birthdate?: string; // ISO yyyy-mm-dd
+  email?: string;
+  phone?: string;
+};
+
+type Props = {
+  customerInfo: CustomerInfo;
+  setCustomerInfo: Dispatch<SetStateAction<CustomerInfo>>;
+  setCurrentStep: (n: number) => void;
+};
+
+/* ========= Util para manter o estilo dos inputs consistente ========= */
+const inputClass = (isEditing: boolean) =>
+  `text-sm border h-10 sm:h-11 ${
+    isEditing
+      ? "border-border"
+      : "border-muted-foreground/10 text-muted-foreground"
+  }`;
+
+/* ========= Componente ========= */
 export default function StepCustomerInfo({
   customerInfo,
   setCustomerInfo,
   setCurrentStep,
-}: any) {
+}: Props) {
   const [isEditing, setIsEditing] = useState(false);
-  const [backupInfo, setBackupInfo] = useState<any>(null);
+  const [backupInfo, setBackupInfo] = useState<CustomerInfo | null>(null);
 
-  // Pre-fill from profile on mount
+  // Preenche a partir do perfil na montagem
   useEffect(() => {
-    async function loadProfile() {
+    let active = true;
+    (async () => {
       try {
         const res = await fetch("/api/profile");
+        if (!active) return;
         if (res.ok) {
           const data = await res.json();
           if (data?.personal) {
-            setCustomerInfo((prev: any) => ({ ...prev, ...data.personal }));
+            setCustomerInfo((prev) => ({ ...prev, ...data.personal }));
           }
         }
       } catch {
-        // silencioso — não quebra a UI mobile
+        // silencioso para não quebrar UX
       }
-    }
-    loadProfile();
+    })();
+    return () => {
+      active = false;
+    };
   }, [setCustomerInfo]);
 
   async function handleSave() {
-    await fetch("/api/profile", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ personal: customerInfo }),
-    });
-    setIsEditing(false);
+    try {
+      await fetch("/api/profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ personal: customerInfo }),
+      });
+      setIsEditing(false);
+    } catch {
+      // você pode exibir um toast de erro aqui, se tiver
+      setIsEditing(false);
+    }
   }
 
   function handleCancel() {
@@ -57,7 +98,7 @@ export default function StepCustomerInfo({
               <span className="truncate">Informações Pessoais</span>
             </CardTitle>
             <p className="mt-1 text-xs sm:text-sm text-muted-foreground leading-snug">
-              Alterar os dados neste formulário não altera no perfil
+              Alterar os dados neste formulário atualiza também o seu perfil.
             </p>
           </div>
 
@@ -99,30 +140,27 @@ export default function StepCustomerInfo({
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4">
-        {/* Nome/Sobrenome */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+      <CardContent className="space-y-5 sm:space-y-6">
+        {/* Nome / Sobrenome */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div className="space-y-1.5">
             <Label htmlFor="firstName" className="text-sm">
               Nome *
             </Label>
             <Input
               id="firstName"
-              className={`text-sm border ${
-                !isEditing
-                  ? "border-muted-foreground/10 text-muted-foreground"
-                  : "border-border"
-              }`}
+              autoComplete="given-name"
+              className={inputClass(isEditing)}
               placeholder="Seu nome"
               value={customerInfo.firstName ?? ""}
               readOnly={!isEditing}
               onChange={
                 isEditing
                   ? (e) =>
-                      setCustomerInfo({
-                        ...customerInfo,
+                      setCustomerInfo((prev) => ({
+                        ...prev,
                         firstName: e.target.value,
-                      })
+                      }))
                   : undefined
               }
               required
@@ -135,21 +173,18 @@ export default function StepCustomerInfo({
             </Label>
             <Input
               id="lastName"
-              className={`text-sm border ${
-                !isEditing
-                  ? "border-muted-foreground/10 text-muted-foreground"
-                  : "border-border"
-              }`}
+              autoComplete="family-name"
+              className={inputClass(isEditing)}
               placeholder="Seu sobrenome"
               value={customerInfo.lastName ?? ""}
               readOnly={!isEditing}
               onChange={
                 isEditing
                   ? (e) =>
-                      setCustomerInfo({
-                        ...customerInfo,
+                      setCustomerInfo((prev) => ({
+                        ...prev,
                         lastName: e.target.value,
-                      })
+                      }))
                   : undefined
               }
               required
@@ -157,29 +192,27 @@ export default function StepCustomerInfo({
           </div>
         </div>
 
-        {/* CPF/Nascimento */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+        {/* CPF / Nascimento */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div className="space-y-1.5">
             <Label htmlFor="cpf" className="text-sm">
               CPF *
             </Label>
             <Input
               id="cpf"
-              className={`text-sm border ${
-                !isEditing
-                  ? "border-muted-foreground/10 text-muted-foreground"
-                  : "border-border"
-              }`}
+              inputMode="numeric"
+              autoComplete="off"
+              className={inputClass(isEditing)}
               placeholder="000.000.000-00"
               value={customerInfo.cpf ?? ""}
               readOnly={!isEditing}
               onChange={
                 isEditing
                   ? (e) =>
-                      setCustomerInfo({
-                        ...customerInfo,
+                      setCustomerInfo((prev) => ({
+                        ...prev,
                         cpf: e.target.value,
-                      })
+                      }))
                   : undefined
               }
               required
@@ -193,20 +226,17 @@ export default function StepCustomerInfo({
             <Input
               id="birthdate"
               type="date"
-              className={`text-sm border ${
-                !isEditing
-                  ? "border-muted-foreground/10 text-muted-foreground"
-                  : "border-border"
-              }`}
+              autoComplete="bday"
+              className={inputClass(isEditing)}
               value={customerInfo.birthdate ?? ""}
               readOnly={!isEditing}
               onChange={
                 isEditing
                   ? (e) =>
-                      setCustomerInfo({
-                        ...customerInfo,
+                      setCustomerInfo((prev) => ({
+                        ...prev,
                         birthdate: e.target.value,
-                      })
+                      }))
                   : undefined
               }
               required
@@ -214,8 +244,8 @@ export default function StepCustomerInfo({
           </div>
         </div>
 
-        {/* Email/Telefone */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+        {/* Email / Telefone */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div className="space-y-1.5">
             <Label htmlFor="email" className="text-sm">
               Email *
@@ -223,21 +253,18 @@ export default function StepCustomerInfo({
             <Input
               id="email"
               type="email"
-              className={`text-sm border ${
-                !isEditing
-                  ? "border-muted-foreground/10 text-muted-foreground"
-                  : "border-border"
-              }`}
+              autoComplete="email"
+              className={inputClass(isEditing)}
               placeholder="seu@email.com"
               value={customerInfo.email ?? ""}
               readOnly={!isEditing}
               onChange={
                 isEditing
                   ? (e) =>
-                      setCustomerInfo({
-                        ...customerInfo,
+                      setCustomerInfo((prev) => ({
+                        ...prev,
                         email: e.target.value,
-                      })
+                      }))
                   : undefined
               }
               required
@@ -250,21 +277,19 @@ export default function StepCustomerInfo({
             </Label>
             <Input
               id="phone"
-              className={`text-sm border ${
-                !isEditing
-                  ? "border-muted-foreground/10 text-muted-foreground"
-                  : "border-border"
-              }`}
+              inputMode="tel"
+              autoComplete="tel-national"
+              className={inputClass(isEditing)}
               placeholder="(11) 99999-9999"
               value={customerInfo.phone ?? ""}
               readOnly={!isEditing}
               onChange={
                 isEditing
                   ? (e) =>
-                      setCustomerInfo({
-                        ...customerInfo,
+                      setCustomerInfo((prev) => ({
+                        ...prev,
                         phone: e.target.value,
-                      })
+                      }))
                   : undefined
               }
               required
@@ -272,14 +297,18 @@ export default function StepCustomerInfo({
           </div>
         </div>
 
+        {/* CTA */}
         <div className="pt-1">
-          <Button
-            type="button"
-            onClick={() => setCurrentStep(2)}
-            className="w-full md:w-auto"
-          >
-            Continuar para Entrega
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Button
+              type="button"
+              onClick={() => setCurrentStep(2)}
+              className="w-full sm:w-auto"
+              disabled={isEditing} // evita avançar com edição pendente
+            >
+              Continuar para Entrega
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
