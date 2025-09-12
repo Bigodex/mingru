@@ -7,6 +7,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
 import type { CartItem } from "@/contexts/CartContext";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function CartList({ cartItems }: { cartItems: CartItem[] }) {
   const { updateQuantity, removeFromCart, updateAttributes } = useCart();
@@ -24,6 +31,10 @@ export default function CartList({ cartItems }: { cartItems: CartItem[] }) {
           .reduce((sum, i) => sum + i.quantity, 0);
 
         const availableStock = Math.max(0, (item.stockCount ?? 0) - usedQuantity);
+
+        // flags para validação
+        const needsSize = item.sizes && item.sizes.length > 0 && !item.size;
+        const needsColor = item.colors && item.colors.length > 0 && !item.color;
 
         return (
           <Card
@@ -47,14 +58,25 @@ export default function CartList({ cartItems }: { cartItems: CartItem[] }) {
                     />
                   </Link>
 
-                  {/* Título + atributos curtinhos (somente se existirem) */}
+                  {/* Título + validações inline */}
                   <div className="min-w-0">
-                    <Link href={`/produto/${item._id}`} className="block">
-                      <h3 className="font-semibold hover:text-primary text-sm sm:text-base truncate">
-                        {item.name}
-                      </h3>
-                    </Link>
-
+                    <div className="flex items-center space-x-2">
+                      <Link href={`/produto/${item._id}`} className="block">
+                        <h3 className="font-semibold hover:text-primary text-sm sm:text-base truncate">
+                          {item.name}
+                        </h3>
+                      </Link>
+                      {needsSize && (
+                        <Badge variant="destructive" className="text-xs ml-20">
+                          Escolha o tamanho
+                        </Badge>
+                      )}
+                      {needsColor && (
+                        <Badge variant="destructive" className="text-xs">
+                          Escolha a cor
+                        </Badge>
+                      )}
+                    </div>
                     <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
                       {item.size && <span>Tam: {item.size}</span>}
                       {item.color && <span>Cor: {item.color}</span>}
@@ -63,7 +85,7 @@ export default function CartList({ cartItems }: { cartItems: CartItem[] }) {
                     </div>
                   </div>
 
-                  {/* Preço + quantidade (quantidade só no md+) */}
+                  {/* Preço + quantidade */}
                   <div className="flex items-center gap-3 sm:gap-4">
                     {/* Quantidade inline (desktop/tablet) */}
                     <div className="hidden md:block">
@@ -103,7 +125,6 @@ export default function CartList({ cartItems }: { cartItems: CartItem[] }) {
                     <span className="font-semibold text-black bg-white/70 border border-border px-2 py-1 rounded-sm text-sm sm:text-base whitespace-nowrap">
                       R$ {(item.price * item.quantity).toFixed(2).replace(".", ",")}
                     </span>
-                    {/* Ícone de seta: apontando pra cima por padrão e girando para baixo no hover */}
                     <ChevronDown
                       className="h-4 w-4 transform rotate-180 group-hover:rotate-0 transition-transform"
                       aria-hidden="true"
@@ -111,52 +132,68 @@ export default function CartList({ cartItems }: { cartItems: CartItem[] }) {
                   </div>
                 </summary>
 
-                {/* DETALHES / MOBILE CONTROLS */}
+                {/* DETALHES */}
                 <div className="p-4 sm:p-6 border-t space-y-4">
                   {/* Atributos (tamanho/cor) */}
                   <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2">
                     {/* Tamanho */}
                     {item.size ? (
-                      <span className="text-sm text-muted-foreground">Tamanho: {item.size}</span>
+                      <span className="text-sm text-primary-foreground">Tamanho: {item.size}</span>
                     ) : item.sizes && item.sizes.length > 0 ? (
-                      <select
-                        className="border rounded-md px-2 py-1 text-sm w-full sm:w-auto hover:bg-primary hover:text-primary-foreground transition-colors"
-                        onChange={(e) => updateAttributes(item._id, { size: e.target.value })}
+                      <Select
+                        onValueChange={(value) =>
+                          updateAttributes(item._id, { size: value })
+                        }
                         defaultValue=""
-                        aria-label="Selecionar tamanho"
                       >
-                        <option value="">Selecione o tamanho</option>
-                        {item.sizes.map((s) => (
-                          <option key={s} value={s}>
-                            {s}
-                          </option>
-                        ))}
-                      </select>
+                        <SelectTrigger className="w-full sm:w-auto border-gray-200 shadow-md bg-white text-sm text-primary-foreground">
+                          <SelectValue placeholder="Selecione o tamanho" />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-md border-gray-200 shadow-md bg-white">
+                          {item.sizes.map((s) => (
+                            <SelectItem
+                              key={s}
+                              value={s}
+                              className="cursor-pointer hover:bg-yellow-400 hover:text-black focus:bg-yellow-400 focus:text-black"
+                            >
+                              {s}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     ) : null}
 
                     {/* Cor */}
                     {item.color ? (
                       <span className="text-sm text-muted-foreground">Cor: {item.color}</span>
                     ) : item.colors && item.colors.length > 0 ? (
-                      <select
-                        className="border rounded-md px-2 py-1 text-sm w-full sm:w-auto hover:bg-primary hover:text-primary-foreground transition-colors"
-                        onChange={(e) => updateAttributes(item._id, { color: e.target.value })}
+                      <Select
+                        onValueChange={(value) =>
+                          updateAttributes(item._id, { color: value })
+                        }
                         defaultValue=""
-                        aria-label="Selecionar cor"
                       >
-                        <option value="">Selecione a cor</option>
-                        {item.colors.map((c) => (
-                          <option key={c.value} value={c.name}>
-                            {c.name}
-                          </option>
-                        ))}
-                      </select>
+                        <SelectTrigger className="w-full sm:w-auto border-gray-200 shadow-md bg-white text-sm">
+                          <SelectValue placeholder="Selecione a cor" />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-md border-gray-200 shadow-md bg-white">
+                          {item.colors.map((c) => (
+                            <SelectItem
+                              key={c.value}
+                              value={c.name}
+                              className="cursor-pointer hover:bg-yellow-400 hover:text-black focus:bg-yellow-400 focus:text-black"
+                            >
+                              {c.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     ) : null}
                   </div>
 
                   {/* Quantidade (mobile) + Estoque + Remover */}
                   <div className="flex flex-col gap-3">
-                    {/* Quantidade – só aparece no mobile para não duplicar com o do header */}
+                    {/* Quantidade – só aparece no mobile */}
                     <div className="md:hidden">
                       <div className="flex items-center border rounded-lg overflow-hidden w-full sm:w-auto">
                         <Button
@@ -226,7 +263,11 @@ export default function CartList({ cartItems }: { cartItems: CartItem[] }) {
       })}
 
       <div className="pt-1">
-        <Button variant="outline" asChild className="w-full sm:w-auto hover:bg-primary hover:border-none bg-white text-black shadow-md">
+        <Button
+          variant="outline"
+          asChild
+          className="w-full sm:w-auto hover:bg-primary hover:border-none bg-white text-black shadow-md"
+        >
           <Link href="/">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Continuar Comprando

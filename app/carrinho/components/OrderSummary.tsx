@@ -37,6 +37,15 @@ export default function OrderSummary({
   const shipping = subtotal >= 150 ? 0 : 15.9;
   const total = subtotal - couponDiscount + shipping;
 
+  // Verificar se todos os itens com variações possuem tamanho e cor escolhidos
+  const hasMissingAttributes = cartItems.some(
+    (item) =>
+      (item.sizes && item.sizes.length > 0 && !item.size) ||
+      (item.colors && item.colors.length > 0 && !item.color)
+  );
+
+  const isCheckoutDisabled = hasOutOfStockItems || hasMissingAttributes;
+
   return (
     <Card>
       <CardHeader>
@@ -96,17 +105,15 @@ export default function OrderSummary({
                       key={`${item._id ?? item.id}-${item.size ?? ""}-${item.color ?? ""}-${idx}`}
                       className="border-b last:border-b-0 pb-3 last:pb-0"
                     >
-                      {/* Linha principal: índice, nome e valor à direita */}
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
                           <span className="font-medium">
                             {idx + 1} &gt; {item.name}
                           </span>
-                          {/* Linha secundária com atributos/quantidade */}
                           <div className="text-xs text-muted-foreground mt-1">
-                            {item.size ? `Tamanho: ${item.size}` : null}
-                            {item.size && item.color ? " • " : ""}
-                            {item.color ? `Cor: ${item.color}` : null}
+                            {item.size ? `Tamanho: ${item.size}` : "Sem tamanho"}
+                            {item.size && item.color ? " • " : " "}
+                            {item.color ? `Cor: ${item.color}` : "Sem cor"}
                             {(item.size || item.color) ? " • " : ""}
                             Qtd: {item.quantity}
                           </div>
@@ -143,7 +150,13 @@ export default function OrderSummary({
           </div>
         )}
 
-        <Button asChild size="lg" className="w-full" disabled={hasOutOfStockItems}>
+        {hasMissingAttributes && (
+          <div className="text-sm text-destructive text-center p-2 bg-destructive/10 rounded">
+            Escolha o tamanho e a cor dos produtos antes de finalizar a compra.
+          </div>
+        )}
+
+        <Button asChild size="lg" className="w-full" disabled={isCheckoutDisabled}>
           <Link href="/checkout">
             <CreditCard className="h-5 w-5 mr-2" />
             Finalizar Compra

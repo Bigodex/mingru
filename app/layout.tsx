@@ -30,13 +30,14 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className={`font-sans ${quicksand.variable} ${GeistMono.variable}`}>
-        <CartProvider>
-          <SessionWrapper>
+        <SessionWrapper>
+          <CartProvider>
             <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
             <Analytics />
-          </SessionWrapper>
-        </CartProvider>
+          </CartProvider>
+        </SessionWrapper>
       </body>
     </html>
   );
 }
+

@@ -1,17 +1,15 @@
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
-import { Filter, Grid, List, SlidersHorizontal } from "lucide-react"
+import { Filter } from "lucide-react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { ProductCard } from "@/components/product-card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Slider } from "@/components/ui/slider"
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 
 interface Product {
   _id: string
@@ -25,6 +23,22 @@ interface Product {
   sizes?: string[]
   colors?: string[]
 }
+
+// 🔹 Utilitário para normalizar dados vindos do backend
+const normalizeProducts = (data: any[]): Product[] =>
+  data.map((p) => ({
+    ...p,
+    brand:
+      typeof p.brand === "object" && p.brand !== null
+        ? p.brand.name ?? p.brand.value
+        : p.brand,
+    sizes: (p.sizes || []).map((s: any) =>
+      typeof s === "object" ? s.name ?? s.value : s,
+    ),
+    colors: (p.colors || []).map((c: any) =>
+      typeof c === "object" ? c.name ?? c.value : c,
+    ),
+  }))
 
 interface CategoryPageProps {
   params: { categoria: string }
@@ -42,13 +56,13 @@ export default function CategoryPage({ params }: CategoryPageProps) {
   const [selectedColors, setSelectedColors] = useState<string[]>([])
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
 
-  // 🔹 Buscar produtos do backend
+  // 🔹 Buscar e normalizar
   useEffect(() => {
     const fetchProducts = async () => {
       const res = await fetch("/api/products")
       if (res.ok) {
-        const data = await res.json()
-        setAllProducts(data)
+        const data: any[] = await res.json()
+        setAllProducts(normalizeProducts(data))
       }
     }
     fetchProducts()
@@ -56,9 +70,10 @@ export default function CategoryPage({ params }: CategoryPageProps) {
 
   // 🔹 Filtragem
   const filteredProducts = useMemo(() => {
-    let products = allProducts.filter((product) => product.category.toLowerCase() === categoria.toLowerCase())
+    let products = allProducts.filter(
+      (product) => product.category.toLowerCase() === categoria.toLowerCase(),
+    )
 
-    // Busca
     if (searchTerm) {
       products = products.filter(
         (product) =>
@@ -67,25 +82,29 @@ export default function CategoryPage({ params }: CategoryPageProps) {
       )
     }
 
-    // Faixa de preço
-    products = products.filter((product) => product.price >= priceRange[0] && product.price <= priceRange[1])
+    products = products.filter(
+      (product) =>
+        product.price >= priceRange[0] && product.price <= priceRange[1],
+    )
 
-    // Marca
     if (selectedBrands.length > 0) {
-      products = products.filter((product) => selectedBrands.includes(product.brand || ""))
+      products = products.filter((product) =>
+        selectedBrands.includes(product.brand || ""),
+      )
     }
 
-    // Tamanho
     if (selectedSizes.length > 0) {
-      products = products.filter((product) => product.sizes?.some((s) => selectedSizes.includes(s)))
+      products = products.filter((product) =>
+        product.sizes?.some((s) => selectedSizes.includes(s)),
+      )
     }
 
-    // Cor
     if (selectedColors.length > 0) {
-      products = products.filter((product) => product.colors?.some((c) => selectedColors.includes(c)))
+      products = products.filter((product) =>
+        product.colors?.some((c) => selectedColors.includes(c)),
+      )
     }
 
-    // Ordenação
     switch (sortBy) {
       case "price-low":
         return products.sort((a, b) => a.price - b.price)
@@ -96,12 +115,23 @@ export default function CategoryPage({ params }: CategoryPageProps) {
       default:
         return products
     }
-  }, [allProducts, categoria, searchTerm, sortBy, priceRange, selectedBrands, selectedSizes, selectedColors])
+  }, [
+    allProducts,
+    categoria,
+    searchTerm,
+    sortBy,
+    priceRange,
+    selectedBrands,
+    selectedSizes,
+    selectedColors,
+  ])
 
-  // 🔹 Valores únicos para filtros
-  const brands = [...new Set(allProducts.filter((p) => p.category.toLowerCase() === categoria.toLowerCase()).map((p) => p.brand).filter(Boolean))]
-  const sizes = [...new Set(allProducts.filter((p) => p.category.toLowerCase() === categoria.toLowerCase()).flatMap((p) => p.sizes || []))]
-  const colors = [...new Set(allProducts.filter((p) => p.category.toLowerCase() === categoria.toLowerCase()).flatMap((p) => p.colors || []))]
+  const categoryProducts = allProducts.filter(
+    (p) => p.category.toLowerCase() === categoria.toLowerCase(),
+  )
+  const brands = [...new Set(categoryProducts.map((p) => p.brand).filter(Boolean))]
+  const sizes = [...new Set(categoryProducts.flatMap((p) => p.sizes || []))]
+  const colors = [...new Set(categoryProducts.flatMap((p) => p.colors || []))]
 
   const clearFilters = () => {
     setSearchTerm("")
@@ -128,24 +158,24 @@ export default function CategoryPage({ params }: CategoryPageProps) {
 
   return (
     <div className="min-h-screen">
-      <Header 
-        onCategoryClick={() => console.log("Category clicked")} 
-        onAvatarClick={() => console.log("Avatar clicked")} 
+      <Header
+        onCategoryClick={() => console.log("Category clicked")}
+        onAvatarClick={() => console.log("Avatar clicked")}
       />
 
       <main className="container mx-auto px-4 py-8">
-        {/* Page Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">{getCategoryTitle(categoria)}</h1>
+          <h1 className="text-3xl font-bold mb-2">
+            {getCategoryTitle(categoria)}
+          </h1>
           <p className="text-muted-foreground">
-            {filteredProducts.length} produto{filteredProducts.length !== 1 ? "s" : ""} encontrado
-            {filteredProducts.length !== 1 ? "s" : ""}
+            {filteredProducts.length} produto
+            {filteredProducts.length !== 1 ? "s" : ""} encontrado
           </p>
         </div>
 
-        {/* Grid e filtros */}
         <div className="flex gap-8">
-          {/* Sidebar Desktop */}
+          {/* Sidebar */}
           <aside className="hidden lg:block w-64 flex-shrink-0">
             <div className="sticky top-24 bg-card p-6 rounded-lg border">
               <div className="flex items-center space-x-2 mb-4">
@@ -156,7 +186,11 @@ export default function CategoryPage({ params }: CategoryPageProps) {
               {/* Busca */}
               <div className="space-y-2 mb-4">
                 <Label>Buscar</Label>
-                <Input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Buscar produtos..." />
+                <Input
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Buscar produtos..."
+                />
               </div>
 
               {/* Preço */}
@@ -164,7 +198,12 @@ export default function CategoryPage({ params }: CategoryPageProps) {
                 <Label>
                   Preço: R$ {priceRange[0]} - R$ {priceRange[1]}
                 </Label>
-                <Slider value={priceRange} onValueChange={setPriceRange} max={1000} step={10} />
+                <Slider
+                  value={priceRange}
+                  onValueChange={setPriceRange}
+                  max={1000}
+                  step={10}
+                />
               </div>
 
               {/* Marcas */}
@@ -174,12 +213,16 @@ export default function CategoryPage({ params }: CategoryPageProps) {
                   <div key={brand} className="flex items-center space-x-2">
                     <Checkbox
                       id={`brand-${brand}`}
-                      checked={selectedBrands.includes(brand!)}
+                      checked={selectedBrands.includes(String(brand))}
                       onCheckedChange={(checked) =>
-                        setSelectedBrands(checked ? [...selectedBrands, brand!] : selectedBrands.filter((b) => b !== brand))
+                        setSelectedBrands(
+                          checked
+                            ? [...selectedBrands, String(brand)]
+                            : selectedBrands.filter((b) => b !== brand),
+                        )
                       }
                     />
-                    <Label htmlFor={`brand-${brand}`}>{brand}</Label>
+                    <Label htmlFor={`brand-${brand}`}>{String(brand)}</Label>
                   </div>
                 ))}
               </div>
@@ -192,12 +235,16 @@ export default function CategoryPage({ params }: CategoryPageProps) {
                     <div key={size} className="flex items-center space-x-2">
                       <Checkbox
                         id={`size-${size}`}
-                        checked={selectedSizes.includes(size)}
+                        checked={selectedSizes.includes(String(size))}
                         onCheckedChange={(checked) =>
-                          setSelectedSizes(checked ? [...selectedSizes, size] : selectedSizes.filter((s) => s !== size))
+                          setSelectedSizes(
+                            checked
+                              ? [...selectedSizes, String(size)]
+                              : selectedSizes.filter((s) => s !== size),
+                          )
                         }
                       />
-                      <Label htmlFor={`size-${size}`}>{size}</Label>
+                      <Label htmlFor={`size-${size}`}>{String(size)}</Label>
                     </div>
                   ))}
                 </div>
@@ -210,31 +257,45 @@ export default function CategoryPage({ params }: CategoryPageProps) {
                   <div key={color} className="flex items-center space-x-2">
                     <Checkbox
                       id={`color-${color}`}
-                      checked={selectedColors.includes(color)}
+                      checked={selectedColors.includes(String(color))}
                       onCheckedChange={(checked) =>
-                        setSelectedColors(checked ? [...selectedColors, color] : selectedColors.filter((c) => c !== color))
+                        setSelectedColors(
+                          checked
+                            ? [...selectedColors, String(color)]
+                            : selectedColors.filter((c) => c !== color),
+                        )
                       }
                     />
-                    <Label htmlFor={`color-${color}`}>{color}</Label>
+                    <Label htmlFor={`color-${color}`}>{String(color)}</Label>
                   </div>
                 ))}
               </div>
 
-              <Button onClick={clearFilters} variant="outline" className="w-full">Limpar Filtros</Button>
+              <Button onClick={clearFilters} variant="outline" className="w-full">
+                Limpar Filtros
+              </Button>
             </div>
           </aside>
 
           {/* Produtos */}
           <div className="flex-1">
             {filteredProducts.length > 0 ? (
-              <div className={viewMode === "grid" ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" : "space-y-4"}>
+              <div
+                className={
+                  viewMode === "grid"
+                    ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+                    : "space-y-4"
+                }
+              >
                 {filteredProducts.map((product) => (
                   <ProductCard key={product._id} product={product} />
                 ))}
               </div>
             ) : (
               <div className="text-center py-12">
-                <p className="text-muted-foreground mb-4">Nenhum produto encontrado.</p>
+                <p className="text-muted-foreground mb-4">
+                  Nenhum produto encontrado.
+                </p>
                 <Button onClick={clearFilters}>Limpar Filtros</Button>
               </div>
             )}

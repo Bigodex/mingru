@@ -116,7 +116,7 @@ export default function CadastroPage() {
                   value={formData.name}
                   onChange={handleInputChange}
                   required
-                  className="pl-3 border border-border bg-muted/50"
+                  className="pl-3 border border-border bg-primary-foreground/5"
                 />
               </div>
 
@@ -130,7 +130,7 @@ export default function CadastroPage() {
                   value={formData.email}
                   onChange={handleInputChange}
                   required
-                  className="pl-3 border border-border bg-muted/50"
+                  className="pl-3 border border-border bg-primary-foreground/5"
                 />
               </div>
 
@@ -145,7 +145,7 @@ export default function CadastroPage() {
                     value={formData.password}
                     onChange={handleInputChange}
                     required
-                    className="pl-3 border border-border bg-muted/50"
+                    className="pl-3 border border-border bg-primary-foreground/5"
                   />
                   <Button
                     type="button"
@@ -174,7 +174,7 @@ export default function CadastroPage() {
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
                     required
-                    className="pl-3 border border-border bg-muted/50"
+                    className="pl-3 border border-border bg-primary-foreground/5"
                   />
                   <Button
                     type="button"
@@ -195,12 +195,13 @@ export default function CadastroPage() {
               <div className="space-y-3">
                 <div className="flex items-center space-x-2">
                   <Checkbox
-                    id="acceptNewsletter"
-                    checked={formData.acceptNewsletter}
-                    onCheckedChange={(checked) => handleCheckboxChange("acceptNewsletter", checked as boolean)}
+                  id="acceptNewsletter"
+                  checked={formData.acceptNewsletter}
+                  onCheckedChange={(checked) => handleCheckboxChange("acceptNewsletter", checked as boolean)}
+                  className="border-gray-800 border-border shadow-sm bg-primary-foreground/10"
                   />
                   <Label htmlFor="acceptNewsletter" className="text-sm">
-                    Quero receber ofertas e novidades por email
+                  Quero receber ofertas e novidades por email
                   </Label>
                 </div>
               </div>

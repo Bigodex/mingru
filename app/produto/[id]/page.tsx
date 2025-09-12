@@ -80,26 +80,14 @@ export default function ProductPage({ params }: { params: { id: string | number 
   const { id } = params
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
-  const [isLoggedIn, setIsLoggedIn] = useState(false) // Novo estado para verificar login
   const router = useRouter()
 
-  useEffect(() => {
-    // Verificar se o token está presente no localStorage
-    const token = localStorage.getItem("token")
-    setIsLoggedIn(!!token)
-  }, [])
-
   const handleAddToCart = async () => {
-    if (!isLoggedIn) {
-      router.push("/login") // Redireciona para a tela de login se o usuário não estiver logado
-      return
-    }
     try {
       await fetch("/api/cart", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`, // Token do usuário logado
         },
         body: JSON.stringify({ productId: product?._id, quantity: 1 }), // Usando _id como identificador do produto
       })

@@ -1,6 +1,7 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
+import { useSession } from "next-auth/react"
 
 export interface CartItem {
   _id: string
@@ -36,23 +37,38 @@ const num = (v: unknown, fallback = 0) => {
 const normalize = (v: string | undefined | null) => (v ?? "").toLowerCase()
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("cartItems")
-      if (stored) {
-        try {
-          return JSON.parse(stored) as CartItem[]
-        } catch {
-          console.error("Erro ao ler carrinho do localStorage")
-        }
-      }
-    }
-    return []
-  })
+  const { data: session, status } = useSession()
+  const [cartItems, setCartItems] = useState<CartItem[]>([])
 
+  // carregar carrinho quando login mudar
   useEffect(() => {
-    localStorage.setItem("cartItems", JSON.stringify(cartItems))
-  }, [cartItems])
+    if (status === "loading") return // ainda carregando
+    if (!session?.user?.email) {
+      setCartItems([]) // sem login -> carrinho vazio
+      return
+    }
+
+    const key = `cartItems_${session.user.email}`
+    const stored = localStorage.getItem(key)
+    if (stored) {
+      try {
+        setCartItems(JSON.parse(stored) as CartItem[])
+      } catch {
+        console.error("Erro ao ler carrinho do localStorage")
+        setCartItems([])
+      }
+    } else {
+      setCartItems([])
+    }
+  }, [session, status])
+
+  // salvar carrinho sempre que mudar
+  useEffect(() => {
+    if (session?.user?.email) {
+      const key = `cartItems_${session.user.email}`
+      localStorage.setItem(key, JSON.stringify(cartItems))
+    }
+  }, [cartItems, session])
 
   const addToCart: CartContextProps["addToCart"] = (product) => {
     setCartItems(prev => {

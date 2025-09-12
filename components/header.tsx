@@ -5,7 +5,19 @@ import { useCart } from "@/contexts/CartContext";
 import Link from "next/link";
 import Image from "next/image";
 import { useSession, signOut } from "next-auth/react";
-import { Search, ShoppingCart, Menu, X, ChevronDown, Home, Scissors, ShoppingBag as Bag, Gift, Shirt } from "lucide-react";
+import { useRouter } from "next/navigation";
+import {
+  Search,
+  ShoppingCart,
+  Menu,
+  X,
+  ChevronDown,
+  Home,
+  Scissors,
+  ShoppingBag as Bag,
+  Gift,
+  Shirt,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -34,6 +46,7 @@ export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
   }, []);
 
   const { data: session } = useSession();
+  const router = useRouter();
 
   const navItems = [
     {
@@ -41,7 +54,7 @@ export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
       icon: Shirt,
       href: "/categoria/Camisetas",
       submenu: [
-        { name: "Oversized", href: "/categoria/Camisetas/Oversized" },
+        { name: "Oversized", href: "/categoria/Camisetas/oversized" },
         { name: "Longline", href: "/categoria/Camisetas/longline" },
         { name: "Graphic Tee", href: "/categoria/Camisetas/graphic-tee" },
         { name: "Tie Dye", href: "/categoria/Camisetas/tie-dye" },
@@ -54,12 +67,12 @@ export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
       icon: Scissors,
       href: "/categoria/Calcas/calcas",
       submenu: [
-        { name: "Cargo", href: "/categoria/masculino/Calças/cargo" },
-        { name: "Jogger", href: "/categoria/masculino/calcas/jogger" },
-        { name: "Wide Leg", href: "/categoria/masculino/calcas/wide-leg" },
-        { name: "Jeans Ripped", href: "/categoria/masculino/calcas/jeans-ripped" },
-        { name: "Skinny", href: "/categoria/masculino/calcas/skinny" },
-        { name: "Moletom", href: "/categoria/masculino/calcas/moletom" },
+        { name: "Cargo", href: "/categoria/Calças/cargo" },
+        { name: "Jogger", href: "/categoria/calcas/jogger" },
+        { name: "Wide Leg", href: "/categoria/calcas/wide-leg" },
+        { name: "Jeans Ripped", href: "/categoria/calcas/jeans-ripped" },
+        { name: "Skinny", href: "/categoria/calcas/skinny" },
+        { name: "Moletom", href: "/categoria/calcas/moletom" },
       ],
     },
     {
@@ -99,56 +112,56 @@ export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
             <div className="flex items-center group relative">
               <Home className="h-6 w-6 text-primary-foreground absolute opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
               <Image
-              src="/Branding/logo-oficial.svg"
-              alt="Mingru"
-              width={50}
-              height={50}
-              className="object-cover transition-transform duration-200 transform translate-x-0 group-hover:translate-x-7 bg-primary-foreground/90 rounded-full mt-0"
+                src="/Branding/logo-oficial.svg"
+                alt="Mingru"
+                width={50}
+                height={50}
+                className="object-cover transition-transform duration-200 transform translate-x-0 group-hover:translate-x-7 bg-primary-foreground/90 rounded-full mt-0"
               />
             </div>
           </Link>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-8 ml-8">
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center space-x-8 ml-8">
             {navItems.map((item) => (
               <div key={item.name}>
-              {item.submenu ? (
-              <DropdownMenu
-              onOpenChange={(open) => setOpenDropdown(open ? item.name : null)}
-              >
-              <DropdownMenuTrigger className="flex items-center space-x-1 text-sm font-medium hover:text-primary-foreground/80 transition-colors relative group">
-                <span>{item.name}</span>
-                <ChevronDown
-                className={`h-4 w-4 transition-transform ${
-                openDropdown === item.name ? "rotate-0" : "rotate-180"
-                }`}
-                />
-                <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary-foreground transition-all duration-300 group-hover:w-full rounded-lg mt-3"></span>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="text-center">
-                {item.submenu.map((subItem) => (
-                <DropdownMenuItem
-                key={subItem.name}
-                asChild
-                className="justify-center"
-                >
-                <Link href={subItem.href}>{subItem.name}</Link>
-                </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-              </DropdownMenu>
-              ) : (
-              <button
-              onClick={() => onCategoryClick(item.name.toLowerCase())}
-              className="flex items-center text-sm font-medium hover:text-primary transition-colors relative group"
-              >
-              {item.name}
-              <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full"></span>
-              </button>
-              )}
+                {item.submenu ? (
+                  <DropdownMenu
+                    onOpenChange={(open) => setOpenDropdown(open ? item.name : null)}
+                  >
+                    <DropdownMenuTrigger className="flex items-center space-x-1 text-sm font-medium hover:text-primary-foreground/80 transition-colors relative group">
+                      <span>{item.name}</span>
+                      <ChevronDown
+                        className={`h-4 w-4 transition-transform ${
+                          openDropdown === item.name ? "rotate-0" : "rotate-180"
+                        }`}
+                      />
+                      <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary-foreground transition-all duration-300 group-hover:w-full rounded-lg mt-3"></span>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="text-center">
+                      {item.submenu.map((subItem) => (
+                        <DropdownMenuItem
+                          key={subItem.name}
+                          asChild
+                          className="justify-center"
+                        >
+                          <Link href={subItem.href}>{subItem.name}</Link>
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : (
+                  <button
+                    onClick={() => onCategoryClick(item.name.toLowerCase())}
+                    className="flex items-center text-sm font-medium hover:text-primary transition-colors relative group"
+                  >
+                    {item.name}
+                    <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full"></span>
+                  </button>
+                )}
               </div>
             ))}
-            </nav>
+          </nav>
 
           {/* Search Bar */}
           <div className="hidden md:flex items-center space-x-4 flex-1 max-w-md mx-8">
@@ -169,12 +182,16 @@ export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                asChild
                 className="hover:border hover:border-border hover:bg-white/80"
+                onClick={() => {
+                  if (session) {
+                    router.push("/carrinho");
+                  } else {
+                    router.push("/login");
+                  }
+                }}
               >
-                <Link href="/carrinho">
-                  <ShoppingCart className="h-8 w-8" />
-                </Link>
+                <ShoppingCart className="h-8 w-8" />
               </Button>
 
               {mounted && totalQuantity > 0 && (
@@ -206,15 +223,18 @@ export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem asChild>
-                    <Link href="/perfil">Ver Perfil</Link>
+                  <Link href="/perfil">Ver Perfil</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                  <Link href="/meus-pedidos">Meus Pedidos</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/login" })}>
-                    Sair
+                  Sair
                   </DropdownMenuItem>
                 </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <>
+                </DropdownMenu>
+              ) : (
+                <>
                 <Button
                   variant="outline"
                   size="sm"
@@ -223,7 +243,11 @@ export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
                 >
                   <Link href="/login">Entrar</Link>
                 </Button>
-                <Button size="sm" asChild className="hidden md:flex border border-border bg-white/80">
+                <Button
+                  size="sm"
+                  asChild
+                  className="hidden md:flex border border-border bg-white/80 hover:bg-white/100"
+                >
                   <Link href="/cadastro">Cadastrar</Link>
                 </Button>
               </>
@@ -243,7 +267,7 @@ export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 border-t border-border">
+          <div className="md:hidden p-0 py-4 border-t border-border bg-transparent">
             <div className="flex flex-col space-y-4">
               {/* Mobile Search */}
               <div className="relative border border-border rounded">
@@ -265,7 +289,7 @@ export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
                           mobileOpenCategory === item.name ? null : item.name
                         )
                       }
-                      className="flex items-center justify-between py-2 text-sm font-medium hover:text-primary transition-colors"
+                      className="flex items-center justify-between py-2 text-sm font-medium text-primary-foreground transition-colors"
                     >
                       <span className="flex items-center">
                         <item.icon className="mr-1 h-4 w-4" />
@@ -274,16 +298,14 @@ export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
                       {item.submenu && (
                         <ChevronDown
                           className={`h-4 w-4 transform transition-transform ${
-                            mobileOpenCategory === item.name
-                              ? "rotate-0"
-                              : "-rotate-90"
+                            mobileOpenCategory === item.name ? "rotate-0" : "-rotate-90"
                           }`}
                         />
                       )}
                     </button>
 
                     {item.submenu && mobileOpenCategory === item.name && (
-                      <div className="grid grid-cols-3 gap-4 mt-2 bg-white/80 p-3 rounded-lg">
+                      <div className="grid grid-cols-3 gap-4 mt-2 bg-muted/50 p-3 rounded-lg">
                         {item.submenu.map((subItem) => (
                           <Link
                             key={subItem.name}
@@ -306,10 +328,14 @@ export function Header({ onCategoryClick, onAvatarClick }: HeaderProps) {
               {/* Mobile Auth Buttons */}
               {!session && (
                 <div className="flex justify-between space-x-2 pt-4">
-                  <Button variant="outline" asChild className="flex-1">
+                  <Button
+                    variant="outline"
+                    asChild
+                    className="flex-1 bg-muted/80 border border-border"
+                  >
                     <Link href="/login">Entrar</Link>
                   </Button>
-                  <Button asChild className="flex-1 border border-border">
+                  <Button asChild className="flex-1 bg-muted/80 border border-border">
                     <Link href="/cadastro">Cadastrar</Link>
                   </Button>
                 </div>
