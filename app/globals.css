@@ -18,10 +18,10 @@
   --muted: #fff; /* Muted gray background */
   --muted-foreground: #8c8c8c; /* Medium gray muted text */
   --accent: #ffbd09; /* Mustard yellow accent */
-  --accent-foreground: #343434; /* Dark gray text on accent */
+  --accent-foreground: #232323; /* Dark gray text on accent */
   --destructive: #d9534f;
   --destructive-foreground: #ffffff;
-  --border: transparent; /* Light gray borders */
+  --border: Transparent; /* Light gray borders */
   --input: #ffffff; /* Transparent input background */ /* No border for inputs */
   --ring: #ffbd09; /* Mustard yellow focus ring */
   --chart-1: #ffbd09;
@@ -41,9 +41,9 @@
 }
 
 .dark {
-  --background: #232323;
-  --foreground: #ffffff;
-  --card: #232323;
+  --background: #1a1a1a;
+  --foreground: #fff;
+  --card: #333;
   --card-foreground: #ffffff;
   --popover: #232323;
   --popover-foreground: #ffffff;
@@ -51,14 +51,14 @@
   --primary-foreground: #232323;
   --secondary: #404040;
   --secondary-foreground: #ffffff;
-  --muted: #404040;
+  --muted: #333;
   --muted-foreground: #b3b3b3;
   --accent: #ffbd09;
   --accent-foreground: #232323;
   --destructive: #9c2b2b;
   --destructive-foreground: #ffffff;
-  --border: #404040;
-  --input: #404040;
+  --border: Transparent;
+  --input: #444;
   --ring: #ffbd09;
   --chart-1: #ffbd09;
   --chart-2: #2ec4b6;

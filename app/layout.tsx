@@ -6,7 +6,8 @@ import { Analytics } from "@vercel/analytics/next";
 import { Suspense } from "react";
 import SessionWrapper from "@/components/SessionWrapper";
 import "./globals.css";
-import { CartProvider } from "@/contexts/CartContext";  // newly added import
+import { CartProvider } from "@/contexts/CartContext";
+import { ThemeProvider } from "next-themes"; // ✅ import do theme
 
 const quicksand = Quicksand({
   subsets: ["latin"],
@@ -28,16 +29,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" suppressHydrationWarning>
       <body className={`font-sans ${quicksand.variable} ${GeistMono.variable}`}>
-        <SessionWrapper>
-          <CartProvider>
-            <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
-            <Analytics />
-          </CartProvider>
-        </SessionWrapper>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <SessionWrapper>
+            <CartProvider>
+              <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
+              <Analytics />
+            </CartProvider>
+          </SessionWrapper>
+        </ThemeProvider>
       </body>
     </html>
   );
 }
-

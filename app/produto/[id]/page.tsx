@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Header } from "@/components/header"
+import { Header } from "@/components/header/header"
 import { Footer } from "@/components/footer"
 import { ProductCarousel } from "@/components/product-carousel"
 import type { Product } from "@/components/types"

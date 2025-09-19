@@ -3,7 +3,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { CheckCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Header } from "@/components/header"
+import { Header } from "@/components/header/header"
 import { Footer } from "@/components/footer"
 
 export default function CadastroSuccessPage() {

@@ -1,8 +1,8 @@
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
-import { Filter } from "lucide-react"
-import { Header } from "@/components/header"
+import { Filter, X } from "lucide-react"
+import { Header } from "@/components/header/header"
 import { Footer } from "@/components/footer"
 import { ProductCard } from "@/components/product-card"
 import { Button } from "@/components/ui/button"
@@ -24,7 +24,6 @@ interface Product {
   colors?: string[]
 }
 
-// 🔹 Utilitário para normalizar dados vindos do backend
 const normalizeProducts = (data: any[]): Product[] =>
   data.map((p) => ({
     ...p,
@@ -55,8 +54,8 @@ export default function CategoryPage({ params }: CategoryPageProps) {
   const [selectedSizes, setSelectedSizes] = useState<string[]>([])
   const [selectedColors, setSelectedColors] = useState<string[]>([])
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
+  const [showFilters, setShowFilters] = useState(false)
 
-  // 🔹 Buscar e normalizar
   useEffect(() => {
     const fetchProducts = async () => {
       const res = await fetch("/api/products")
@@ -68,7 +67,6 @@ export default function CategoryPage({ params }: CategoryPageProps) {
     fetchProducts()
   }, [])
 
-  // 🔹 Filtragem
   const filteredProducts = useMemo(() => {
     let products = allProducts.filter(
       (product) => product.category.toLowerCase() === categoria.toLowerCase(),
@@ -164,117 +162,49 @@ export default function CategoryPage({ params }: CategoryPageProps) {
       />
 
       <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">
-            {getCategoryTitle(categoria)}
-          </h1>
-          <p className="text-muted-foreground">
-            {filteredProducts.length} produto
-            {filteredProducts.length !== 1 ? "s" : ""} encontrado
-          </p>
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold mb-1">
+              {getCategoryTitle(categoria)}
+            </h1>
+            <p className="text-muted-foreground text-sm md:text-base">
+              {filteredProducts.length} produto
+              {filteredProducts.length !== 1 ? "s" : ""} encontrado
+            </p>
+          </div>
+
+          {/* Botão de filtros em mobile */}
+          <Button
+            variant="outline"
+            className="lg:hidden flex items-center gap-2"
+            onClick={() => setShowFilters(true)}
+          >
+            <Filter className="h-4 w-4" />
+            Filtros
+          </Button>
         </div>
 
-        <div className="flex gap-8">
-          {/* Sidebar */}
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Sidebar Desktop */}
           <aside className="hidden lg:block w-64 flex-shrink-0">
-            <div className="sticky top-24 bg-card p-6 rounded-lg border">
-              <div className="flex items-center space-x-2 mb-4">
-                <Filter className="h-5 w-5" />
-                <h2 className="font-semibold">Filtros</h2>
-              </div>
-
-              {/* Busca */}
-              <div className="space-y-2 mb-4">
-                <Label>Buscar</Label>
-                <Input
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Buscar produtos..."
-                />
-              </div>
-
-              {/* Preço */}
-              <div className="space-y-2 mb-4">
-                <Label>
-                  Preço: R$ {priceRange[0]} - R$ {priceRange[1]}
-                </Label>
-                <Slider
-                  value={priceRange}
-                  onValueChange={setPriceRange}
-                  max={1000}
-                  step={10}
-                />
-              </div>
-
-              {/* Marcas */}
-              <div className="space-y-2 mb-4">
-                <Label>Marcas</Label>
-                {brands.map((brand) => (
-                  <div key={brand} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`brand-${brand}`}
-                      checked={selectedBrands.includes(String(brand))}
-                      onCheckedChange={(checked) =>
-                        setSelectedBrands(
-                          checked
-                            ? [...selectedBrands, String(brand)]
-                            : selectedBrands.filter((b) => b !== brand),
-                        )
-                      }
-                    />
-                    <Label htmlFor={`brand-${brand}`}>{String(brand)}</Label>
-                  </div>
-                ))}
-              </div>
-
-              {/* Tamanhos */}
-              <div className="space-y-2 mb-4">
-                <Label>Tamanhos</Label>
-                <div className="grid grid-cols-3 gap-2">
-                  {sizes.map((size) => (
-                    <div key={size} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`size-${size}`}
-                        checked={selectedSizes.includes(String(size))}
-                        onCheckedChange={(checked) =>
-                          setSelectedSizes(
-                            checked
-                              ? [...selectedSizes, String(size)]
-                              : selectedSizes.filter((s) => s !== size),
-                          )
-                        }
-                      />
-                      <Label htmlFor={`size-${size}`}>{String(size)}</Label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Cores */}
-              <div className="space-y-2 mb-4">
-                <Label>Cores</Label>
-                {colors.map((color) => (
-                  <div key={color} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`color-${color}`}
-                      checked={selectedColors.includes(String(color))}
-                      onCheckedChange={(checked) =>
-                        setSelectedColors(
-                          checked
-                            ? [...selectedColors, String(color)]
-                            : selectedColors.filter((c) => c !== color),
-                        )
-                      }
-                    />
-                    <Label htmlFor={`color-${color}`}>{String(color)}</Label>
-                  </div>
-                ))}
-              </div>
-
-              <Button onClick={clearFilters} variant="outline" className="w-full">
-                Limpar Filtros
-              </Button>
-            </div>
+            <FiltersPanel
+              {...{
+                searchTerm,
+                setSearchTerm,
+                priceRange,
+                setPriceRange,
+                brands,
+                selectedBrands,
+                setSelectedBrands,
+                sizes,
+                selectedSizes,
+                setSelectedSizes,
+                colors,
+                selectedColors,
+                setSelectedColors,
+                clearFilters,
+              }}
+            />
           </aside>
 
           {/* Produtos */}
@@ -283,7 +213,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
               <div
                 className={
                   viewMode === "grid"
-                    ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+                    ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6"
                     : "space-y-4"
                 }
               >
@@ -304,6 +234,156 @@ export default function CategoryPage({ params }: CategoryPageProps) {
       </main>
 
       <Footer />
+
+      {/* Modal Filtros Mobile */}
+      {showFilters && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex justify-end">
+          <div className="w-4/5 max-w-xs bg-card p-6 overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="font-semibold text-lg">Filtros</h2>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowFilters(false)}
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+            <FiltersPanel
+              {...{
+                searchTerm,
+                setSearchTerm,
+                priceRange,
+                setPriceRange,
+                brands,
+                selectedBrands,
+                setSelectedBrands,
+                sizes,
+                selectedSizes,
+                setSelectedSizes,
+                colors,
+                selectedColors,
+                setSelectedColors,
+                clearFilters,
+              }}
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// 🔹 Componente isolado para filtros
+function FiltersPanel({
+  searchTerm,
+  setSearchTerm,
+  priceRange,
+  setPriceRange,
+  brands,
+  selectedBrands,
+  setSelectedBrands,
+  sizes,
+  selectedSizes,
+  setSelectedSizes,
+  colors,
+  selectedColors,
+  setSelectedColors,
+  clearFilters,
+}: any) {
+  return (
+    <div className="sticky top-24 bg-card p-6 rounded-lg border space-y-6">
+      {/* Busca */}
+      <div className="space-y-2">
+        <Label>Buscar</Label>
+        <Input
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Buscar produtos..."
+        />
+      </div>
+
+      {/* Preço */}
+      <div className="space-y-2">
+        <Label>
+          Preço: R$ {priceRange[0]} - R$ {priceRange[1]}
+        </Label>
+        <Slider
+          value={priceRange}
+          onValueChange={setPriceRange}
+          max={1000}
+          step={10}
+        />
+      </div>
+
+      {/* Marcas */}
+      <div className="space-y-2">
+        <Label>Marcas</Label>
+        {brands.map((brand: string) => (
+          <div key={brand} className="flex items-center space-x-2">
+            <Checkbox
+              id={`brand-${brand}`}
+              checked={selectedBrands.includes(String(brand))}
+              onCheckedChange={(checked) =>
+                setSelectedBrands(
+                  checked
+                    ? [...selectedBrands, String(brand)]
+                    : selectedBrands.filter((b: string) => b !== brand),
+                )
+              }
+            />
+            <Label htmlFor={`brand-${brand}`}>{String(brand)}</Label>
+          </div>
+        ))}
+      </div>
+
+      {/* Tamanhos */}
+      <div className="space-y-2">
+        <Label>Tamanhos</Label>
+        <div className="grid grid-cols-3 gap-2">
+          {sizes.map((size: string) => (
+            <div key={size} className="flex items-center space-x-2">
+              <Checkbox
+                id={`size-${size}`}
+                checked={selectedSizes.includes(String(size))}
+                onCheckedChange={(checked) =>
+                  setSelectedSizes(
+                    checked
+                      ? [...selectedSizes, String(size)]
+                      : selectedSizes.filter((s: string) => s !== size),
+                  )
+                }
+              />
+              <Label htmlFor={`size-${size}`}>{String(size)}</Label>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Cores */}
+      <div className="space-y-2">
+        <Label>Cores</Label>
+        {colors.map((color: string) => (
+          <div key={color} className="flex items-center space-x-2">
+            <Checkbox
+              id={`color-${color}`}
+              checked={selectedColors.includes(String(color))}
+              onCheckedChange={(checked) =>
+                setSelectedColors(
+                  checked
+                    ? [...selectedColors, String(color)]
+                    : selectedColors.filter((c: string) => c !== color),
+                )
+              }
+            />
+            <Label htmlFor={`color-${color}`}>{String(color)}</Label>
+          </div>
+        ))}
+      </div>
+
+      <Button onClick={clearFilters} variant="outline" className="w-full">
+        Limpar Filtros
+      </Button>
     </div>
   )
 }

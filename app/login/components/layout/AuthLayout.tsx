@@ -1,6 +1,6 @@
 "use client";
 
-import { Header } from "@/components/header";
+import { Header } from "@/components/header/header";
 import { Footer } from "@/components/footer";
 import { Card } from "@/components/ui/card";
 import type { PropsWithChildren } from "react";

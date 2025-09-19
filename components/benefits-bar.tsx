@@ -28,7 +28,7 @@ export function BenefitsBar() {
         {benefits.map((benefit, index) => (
         <div
           key={index}
-          className="flex items-center space-x-2 text-sm font-medium"
+          className="flex items-center space-x-2 text-sm card-foreground font-medium"
         >
           <benefit.icon className="h-5 w-5 text-primary" />
           <span>{benefit.text}</span>

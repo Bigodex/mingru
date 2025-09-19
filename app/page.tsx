@@ -1,5 +1,5 @@
 "use client"
-import { Header } from "@/components/header"
+import { Header } from "@/components/header/header"
 import { Footer } from "@/components/footer"
 import { HeroBanner } from "@/components/hero-banner"
 import { BenefitsBar } from "@/components/benefits-bar"

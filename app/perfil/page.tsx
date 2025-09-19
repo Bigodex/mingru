@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Pencil, User, MapPin, CreditCard } from "lucide-react";
-import { Header } from "@/components/header";
+import { Header } from "@/components/header/header";
 import { Footer } from "@/components/footer";
 import CreditCardPreview from "@/components/payment/CreditCardPreview";
 

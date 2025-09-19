@@ -101,12 +101,12 @@ export function ProductCarousel({ title, products }: ProductCarouselProps) {
                   {product.name}
                   </h3>
                 </Link>
-                <p className="text-sm text-primary-foreground line-clamp-3 mt-6">
+                <p className="text-sm text-foreground line-clamp-3 mt-6">
                   {product.description}
                 </p>
                 </div>
 
-                <p className="text-lg font-bold text-primary-foreground">
+                <p className="text-lg font-bold text-foreground">
                 R$ {product.price.toFixed(2).replace(".", ",")}
                 </p>
               </div>
@@ -115,7 +115,7 @@ export function ProductCarousel({ title, products }: ProductCarouselProps) {
               {/* Botão sempre no rodapé */}
               <CardFooter className="p-4 pt-0">
               <Button
-                className="w-full justify-center bg-primary/70 border"
+                className="w-full justify-center bg-primary border"
                 onClick={() => handleAddToCart(product)}
               >
                 <ShoppingCart className="h-4 w-4 mr-2" />
@@ -153,12 +153,12 @@ export function ProductCarousel({ title, products }: ProductCarouselProps) {
                       {product.name}
                     </h3>
                   </Link>
-                  <p className="text-sm text-primary-foreground line-clamp-3 mt-2">
+                  <p className="text-sm text-foreground line-clamp-3 mt-2">
                     {product.description}
                   </p>
                 </div>
 
-                <p className="text-lg font-bold text-primary-foreground">
+                <p className="text-lg font-bold text-foreground">
                   R$ {product.price.toFixed(2).replace(".", ",")}
                 </p>
               </div>

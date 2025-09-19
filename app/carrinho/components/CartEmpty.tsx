@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { ShoppingBag } from "lucide-react"
-import { Header } from "@/components/header"
+import { Header } from "@/components/header/header"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 

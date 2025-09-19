@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Package, Truck, CheckCircle, Clock, Eye, List } from "lucide-react"
-import { Header } from "@/components/header"
+import { Header } from "@/components/header/header"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"

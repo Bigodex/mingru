@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react"
 import { Filter } from "lucide-react"
-import { Header } from "@/components/header"
+import { Header } from "@/components/header/header"
 import { Footer } from "@/components/footer"
 import { ProductCard } from "@/components/product-card"
 import { Button } from "@/components/ui/button"
